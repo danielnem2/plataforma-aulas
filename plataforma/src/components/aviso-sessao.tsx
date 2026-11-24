@@ -1,0 +1,34 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { DURACAO_SESSAO_MS } from "@/lib/supabase/config";
+
+const AVISAR_ANTES_MS = 10 * 60 * 1000;
+
+/** Avisa 10 min antes da sessão de 2h expirar e manda para o login quando expira (RF81) */
+export function AvisoSessao({ loginEm }: { loginEm: string | null }) {
+  const [restante, setRestante] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!loginEm) return;
+    const fim = new Date(loginEm).getTime() + DURACAO_SESSAO_MS;
+    const tick = () => {
+      const r = fim - Date.now();
+      if (r <= 0) {
+        window.location.href = "/login?expirada=1";
+        return;
+      }
+      setRestante(r);
+    };
+    tick();
+    const t = setInterval(tick, 30_000);
+    return () => clearInterval(t);
+  }, [loginEm]);
+
+  if (restante === null || restante > AVISAR_ANTES_MS) return null;
+  return (
+    <span className="rounded-full bg-amber-500/20 px-3 py-1 text-amber-200" role="status">
+      ⏰ Sessão expira em {Math.ceil(restante / 60000)} min — salve seu trabalho
+    </span>
+  );
+}

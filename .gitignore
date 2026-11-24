@@ -1,0 +1,7 @@
+# Segredos e arquivos locais (nunca vão para o GitHub)
+.env*
+!.env.example
+node_modules/
+.next/
+.vercel/
+.claude/settings.local.json
