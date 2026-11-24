@@ -49,7 +49,7 @@ Next.js 16 + Supabase. Requisitos em `../requisitos.md`, modelo do banco em `../
 | Alunos — progresso, aula atual, faltas coloridas; página do aluno com cursos, liberação manual de aulas, mapa, presenças, extrato, ajuste de Gold | todos (ajuste de Gold: admin/coordenador) |
 | Faltas — 🟡 1 / 🔴 2+ semanas seguidas, marcar como contatado | todos |
 | Compras de horas — avisar a Gaming House | todos |
-| Aulas — criar/editar com link do Figma, dependências e mapa | todos |
+| Aulas — criar/editar com link do Figma, dependências e mapa | admin (professor e coordenador só veem e enviam dúvida) |
 | Cursos | admin |
 | Loja — itens com upload de arquivo e imagem | admin, coordenador |
 | Escolas · Turmas · Usuários · Dias sem aula | conforme papel |

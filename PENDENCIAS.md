@@ -30,7 +30,7 @@ Se algo der erro, me diga a tela e o que fez — eu olho o log do servidor.
 - [ ] Os arquivos do Figma precisam estar compartilhados como **"qualquer pessoa com o link pode ver"**, senão o aluno vê a tela de login do Figma.
 
 ## 5. Decisões que tomei — confirme ou peça mudança
-- **Aulas são globais**: qualquer professor, coordenador ou admin pode criar/editar qualquer aula (as aulas não são por escola). Se cada escola deve ter as suas, eu ajusto.
+- **Aulas são globais e só o ADM gerencia** (migração `0006_aulas_so_admin.sql`): criar, editar, remover e encaixar aulas é só do ADM. Professor e coordenador veem as aulas e usam "Enviar dúvida ao ADM".
 - **"Diretor" aparece como "Coordenador"** na tela.
 - **Status do aluno** (no trilho / atrasado) usa as **faltas** + "aguardando avaliação". Não criei regra de atraso por tempo sem entregar tarefa — se quiser (ex.: 2 semanas sem enviar nada), me diga o prazo.
 - **Links aceitos no envio de tarefa**: Google Drive/Docs, Dropbox, GitHub e OneDrive.
@@ -38,7 +38,7 @@ Se algo der erro, me diga a tela e o que fez — eu olho o log do servidor.
 - Ninguém é excluído: usuários, turmas e itens da loja são **desativados** (o histórico fica).
 - **Aulas** (migração `0004_cadeia_aulas.sql`, já rodada):
   - Coluna no mapa, posição na coluna e nº da missão são **calculados sozinhos** pelos pré-requisitos.
-  - "Remover aula" (só admin e coordenação): quem dependia dela passa a depender dos pré-requisitos dela. Sem entregas de alunos → excluída de vez; com entregas → arquivada (some do mapa, histórico fica).
+  - "Remover aula" (só ADM): quem dependia dela passa a depender dos pré-requisitos dela. Sem entregas de alunos → excluída de vez; com entregas → arquivada (some do mapa, histórico fica).
   - "Nova aula → Depois de X" encaixa no meio: o que vinha depois de X passa a vir depois da nova.
 - **Revisões de aulas** (migração `0005_revisoes_aula.sql`, já rodada):
   - Professor e coordenador enviam ao ADM uma dúvida sobre uma missão (dele ou de um aluno) em Aulas → "Enviar dúvida ao ADM".

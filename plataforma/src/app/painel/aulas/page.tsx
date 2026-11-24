@@ -1,4 +1,4 @@
-import { BookOpen, ExternalLink, GitBranch, List, Map as MapIcon, Plus, Trash2 } from "lucide-react";
+import { BookOpen, ExternalLink, GitBranch, List, Map as MapIcon, MessagesSquare, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { FormAcao } from "@/components/form-acao";
 import { MapaHabilidades } from "@/components/mapa-habilidades";
@@ -33,7 +33,9 @@ const ROTULO_DIF = { facil: "Fácil", medio: "Médio", dificil: "Difícil" };
 
 export default async function AulasPage({ searchParams }: PageProps<"/painel/aulas">) {
   const perfil = await exigirPapel(["admin", "diretor", "professor"]);
-  const podeRemover = perfil.papel === "admin" || perfil.papel === "diretor";
+  // Só o ADM gerencia aulas; professor e coordenador veem e enviam dúvidas
+  const ehAdmin = perfil.papel === "admin";
+  const podeRemover = ehAdmin;
   const podeEnviarDuvida = perfil.papel === "professor" || perfil.papel === "diretor";
   const { curso } = await searchParams;
   const supabase = await createClient();
@@ -146,6 +148,7 @@ export default async function AulasPage({ searchParams }: PageProps<"/painel/aul
         />
       </Cartao>
 
+      {ehAdmin ? (
       <Cartao titulo="Nova aula" icone={Plus}>
         <FormAcao acao={criarAula} botao="Criar aula" limparAoSalvar>
           <Campo rotulo="Onde colocar no caminho do curso *">
@@ -167,6 +170,12 @@ export default async function AulasPage({ searchParams }: PageProps<"/painel/aul
           {campos()}
         </FormAcao>
       </Cartao>
+      ) : (
+        <Aviso tom="info" icone={MessagesSquare}>
+          As aulas são criadas e editadas pelo ADM. Se tiver dúvida ou encontrar um problema numa missão, use
+          “Enviar dúvida ao ADM” na aula.
+        </Aviso>
+      )}
 
       <Cartao titulo={`${aulas.length} aula(s) neste curso`} icone={List}>
         <ul className="flex flex-col divide-y divide-borda">
@@ -194,6 +203,7 @@ export default async function AulasPage({ searchParams }: PageProps<"/painel/aul
                 })()}
               </p>
               <div className="flex flex-wrap gap-4">
+              {ehAdmin && (
               <Expansivel rotulo="Editar">
                 <FormAcao acao={editarAula}>
                   <input type="hidden" name="id" value={a.id} />
@@ -203,6 +213,7 @@ export default async function AulasPage({ searchParams }: PageProps<"/painel/aul
                   </label>
                 </FormAcao>
               </Expansivel>
+              )}
               {podeEnviarDuvida && (
                 <Expansivel rotulo="Enviar dúvida ao ADM">
                   <FormAcao acao={enviarRevisao} botao="Enviar ao ADM" limparAoSalvar>

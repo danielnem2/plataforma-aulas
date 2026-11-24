@@ -6,7 +6,8 @@ import { normalizarFigma } from "@/lib/figma";
 import { createClient } from "@/lib/supabase/server";
 import type { EstadoAcao } from "@/components/form-acao";
 
-const EQUIPE = ["admin", "diretor", "professor"] as const;
+// Só o ADM gerencia aulas; professor e coordenador enviam dúvidas (Revisões de aulas)
+const SO_ADMIN = ["admin"] as const;
 const DIFICULDADES = ["facil", "medio", "dificil"];
 
 function lerAula(formData: FormData) {
@@ -80,8 +81,8 @@ async function salvarDependencias(aulaId: string, cursoId: string, deps: string[
 }
 
 export async function criarAula(_: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
-  const perfil = await perfilComPapel([...EQUIPE]);
-  if (!perfil) return { erro: "Sem permissão." };
+  const perfil = await perfilComPapel([...SO_ADMIN]);
+  if (!perfil) return { erro: "Só o ADM cria aulas." };
   const l = lerAula(formData);
   const erro = validar(l);
   if (erro) return { erro };
@@ -113,7 +114,7 @@ export async function criarAula(_: EstadoAcao, formData: FormData): Promise<Esta
 }
 
 export async function editarAula(_: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
-  if (!(await perfilComPapel([...EQUIPE]))) return { erro: "Sem permissão." };
+  if (!(await perfilComPapel([...SO_ADMIN]))) return { erro: "Só o ADM edita aulas." };
   const id = String(formData.get("id") ?? "");
   const l = lerAula(formData);
   const erro = validar(l);
@@ -138,7 +139,7 @@ export async function editarAula(_: EstadoAcao, formData: FormData): Promise<Est
  * Sem entregas de alunos: exclui de vez. Com entregas: arquiva (some do mapa, histórico fica).
  */
 export async function removerAula(_: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
-  if (!(await perfilComPapel(["admin", "diretor"]))) return { erro: "Só admin e coordenação removem aulas." };
+  if (!(await perfilComPapel([...SO_ADMIN]))) return { erro: "Só o ADM remove aulas." };
   if (formData.get("confirmar") !== "on") return { erro: "Marque a confirmação para remover." };
   const id = String(formData.get("id") ?? "");
 
