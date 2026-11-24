@@ -18,9 +18,12 @@ Se algo der erro, me diga a tela e o que fez — eu olho o log do servidor.
 ## 2. Segurança
 - [ ] **Trocar a senha do admin** (`admin@adm.com`): ela apareceu no chat. Supabase → Authentication → Users → Reset password. Ideal: usar um e-mail real seu.
 
-## 3. Guardar o projeto
-- [ ] O código está numa pasta temporária desta sessão. **Mova para uma pasta sua** (posso fazer isso por você).
-- [ ] Para publicar na Vercel: instalar o **Git** e criar conta no **GitHub**.
+## 3. Publicação
+- [x] Projeto em `Documentos\plataforma-aulas`, código no GitHub (`danielnem2/plataforma-aulas`, privado).
+- [x] Site no ar: **https://plataforma-aulas-tau.vercel.app** (atualiza sozinho a cada push).
+- [ ] Testar o login no site publicado.
+- [ ] Supabase → Authentication → URL Configuration → **Site URL** = endereço acima.
+- [ ] Ativar **2FA** na Vercel e no GitHub (a Vercel está sugerindo).
 
 ## 4. Configurações a conferir
 - [ ] **Tamanho máximo de arquivo da loja**: no plano gratuito do Supabase o limite por arquivo é de cerca de 50 MB. UnityPacks maiores vão falhar no upload. (Supabase → Storage → Settings.)
