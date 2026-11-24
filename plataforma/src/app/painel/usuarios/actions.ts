@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { Papel } from "@/lib/supabase/config";
 import { createClient, type PerfilAtual } from "@/lib/supabase/server";
 import type { EstadoAcao } from "@/components/form-acao";
+import { lerContrato, SEM_CONTRATO } from "@/lib/contrato-form";
 
 const SENHA_MINIMA = 8;
 
@@ -63,6 +64,10 @@ export async function criarUsuario(_: EstadoAcao, formData: FormData): Promise<E
   const vinculo = await lerVinculo(formData, perfil);
   if (typeof vinculo === "string") return { erro: vinculo };
 
+  // Aluno sempre entra com contrato (meses) ou aula experimental (24h)
+  const contrato = vinculo.papel === "aluno" ? lerContrato(formData) : SEM_CONTRATO;
+  if (typeof contrato === "string") return { erro: contrato };
+
   // 1. Cria o login (exige a chave secreta)
   let admin;
   try {
@@ -87,7 +92,7 @@ export async function criarUsuario(_: EstadoAcao, formData: FormData): Promise<E
   const supabase = await createClient();
   const { error: erroPerfil } = await supabase
     .from("perfis")
-    .insert({ id: criado.user.id, nome, email, ...vinculo });
+    .insert({ id: criado.user.id, nome, email, ...vinculo, ...contrato });
   if (erroPerfil) {
     await admin.auth.admin.deleteUser(criado.user.id); // desfaz o login
     return { erro: "Sem permissão para criar esse usuário nessa escola." };
@@ -120,7 +125,13 @@ export async function editarUsuario(_: EstadoAcao, formData: FormData): Promise<
 
   const { data: salvo, error } = await supabase
     .from("perfis")
-    .update({ nome, ativo: formData.get("ativo") === "on", ...vinculo })
+    .update({
+      nome,
+      ativo: formData.get("ativo") === "on",
+      ...vinculo,
+      // deixou de ser aluno: não tem mais contrato
+      ...(vinculo.papel !== "aluno" ? SEM_CONTRATO : {}),
+    })
     .eq("id", id)
     .select("id");
   if (error || !salvo?.length) return { erro: "Sem permissão para salvar esse usuário." };

@@ -5,6 +5,7 @@ import {
   SUPABASE_KEY,
   SUPABASE_URL,
 } from "@/lib/supabase/config";
+import { acessoLiberado, type DadosContrato } from "@/lib/contrato";
 
 const ROTAS_PUBLICAS = ["/login"];
 
@@ -64,9 +65,15 @@ export async function proxy(request: NextRequest) {
 
   const { data: perfil } = await supabase
     .from("perfis")
-    .select("ativo, ultimo_login_em")
+    .select("ativo, ultimo_login_em, papel, tipo_acesso, acesso_inicio, acesso_fim, contrato_meses")
     .eq("id", user.id)
     .single();
+
+  // Aluno fora do período do contrato / aula experimental
+  if (perfil?.papel === "aluno" && !acessoLiberado(perfil as DadosContrato)) {
+    await supabase.auth.signOut();
+    return rotaPublica ? response : redirecionar("/login?erro=contrato");
+  }
 
   const loginEm = perfil?.ultimo_login_em
     ? new Date(perfil.ultimo_login_em).getTime()

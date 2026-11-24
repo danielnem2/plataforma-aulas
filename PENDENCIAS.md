@@ -36,6 +36,12 @@ Se algo der erro, me diga a tela e o que fez — eu olho o log do servidor.
 - **Links aceitos no envio de tarefa**: Google Drive/Docs, Dropbox, GitHub e OneDrive.
 - **Senha mínima**: 8 caracteres.
 - Ninguém é excluído: usuários, turmas, aulas e itens da loja são **desativados** (o histórico fica).
+- **Contratos** (migração `0003_contratos.sql`, já rodada):
+  - Contrato de N meses começa 00:00 da data de início; o último dia de acesso é a véspera da mesma data N meses depois (24/11 + 6 meses → acesso até 23/05).
+  - Aula experimental: 24h a partir da data/hora escolhida (padrão: agora).
+  - Antes do início ou depois do fim o aluno **não entra** (e é desconectado se estiver logado).
+  - Alunos cadastrados antes desta regra ficam **"sem contrato"** e continuam entrando até a coordenação cadastrar o contrato.
+  - Professor vê os contratos da turma, mas só coordenação/admin altera.
 
 ## 6. Dados de teste que deixei no banco
 - Aula **"[TESTE] Aula de teste"** no curso Júnior — está **inativa** (não aparece para alunos). Pode deixar ou reaproveitar editando.

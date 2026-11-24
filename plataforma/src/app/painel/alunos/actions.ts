@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { perfilComPapel } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { EstadoAcao } from "@/components/form-acao";
+import { lerContrato } from "@/lib/contrato-form";
 
 const EQUIPE = ["admin", "diretor", "professor"] as const;
 
@@ -85,6 +86,25 @@ export async function revogarAula(_: EstadoAcao, formData: FormData): Promise<Es
   if (error) return { erro: "Sem permissão." };
   refresh();
   return { ok: "Liberação removida 🔒" };
+}
+
+/** Contrato do aluno: início, duração ou aula experimental — só coordenação/admin */
+export async function salvarContrato(_: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
+  if (!(await perfilComPapel(["admin", "diretor"]))) return { erro: "Sem permissão." };
+  const alunoId = String(formData.get("aluno_id") ?? "");
+  const contrato = lerContrato(formData);
+  if (typeof contrato === "string") return { erro: contrato };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("perfis")
+    .update(contrato)
+    .eq("id", alunoId)
+    .eq("papel", "aluno")
+    .select("id");
+  if (error || !data?.length) return { erro: "Sem permissão para este aluno." };
+  refresh();
+  return { ok: "Contrato salvo." };
 }
 
 /** Ajuste manual de Gold (RF90) — admin e coordenador */

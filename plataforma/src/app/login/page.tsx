@@ -9,6 +9,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   let aviso: string | undefined;
   if (params.expirada) aviso = "Sua sessão expirou após 2 horas. Entre novamente.";
   if (params.erro === "inativo") aviso = "Conta desativada ou sem cadastro. Fale com a secretaria.";
+  if (params.erro === "contrato") aviso = "Seu período de acesso terminou (ou ainda não começou). Fale com a coordenação.";
 
   return (
     <main className="flex flex-1 items-center justify-center p-6">

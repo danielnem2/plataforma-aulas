@@ -7,7 +7,17 @@ import { exigirPapel } from "@/lib/auth";
 import { corFalta } from "@/lib/faltas";
 import { carregarMapa } from "@/lib/mapa";
 import { createClient } from "@/lib/supabase/server";
-import { ajustarGold, liberarAula, revogarAula, salvarCursosAluno } from "../actions";
+import { CamposContrato } from "@/components/campos-contrato";
+import {
+  agoraLocalInput,
+  COR_SITUACAO,
+  hojeLocal,
+  paraInputData,
+  paraInputDataHora,
+  ROTULO_TIPO_ACESSO,
+  statusContrato,
+} from "@/lib/contrato";
+import { ajustarGold, liberarAula, revogarAula, salvarContrato, salvarCursosAluno } from "../actions";
 
 export const metadata = { title: "Aluno" };
 // Depende do usuário logado: renderiza a cada requisição
@@ -40,7 +50,7 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
   // RLS: se o usuário não pode gerir este aluno, a consulta volta vazia
   const { data: aluno } = await supabase
     .from("perfis")
-    .select("id, nome, email, turma_id, escola_id, gold_saldo, ativo")
+    .select("id, nome, email, turma_id, escola_id, gold_saldo, ativo, tipo_acesso, acesso_inicio, acesso_fim, contrato_meses")
     .eq("id", id)
     .eq("papel", "aluno")
     .single();
@@ -77,6 +87,9 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
   const mapa = cursoMapa ? await carregarMapa(id, cursoMapa) : null;
   const cor = corFalta((faltas as number | null) ?? 0);
   const nomeAula = (aulaId: string) => mapa?.nos.find((n) => n.id === aulaId)?.titulo ?? "aula de outro curso";
+  const contrato = statusContrato(aluno);
+  const corContrato = COR_SITUACAO[contrato.situacao];
+  const podeContrato = perfil.papel === "admin" || perfil.papel === "diretor";
 
   return (
     <div className="flex max-w-6xl flex-col gap-6">
@@ -90,6 +103,41 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
           </span>
           {!aluno.ativo && " · (inativo)"}
         </p>
+      </div>
+
+      <div id="contrato">
+        <Cartao titulo="📄 Contrato / acesso">
+          <div className={`mb-3 rounded-lg p-3 text-sm ${corContrato.fundo}`}>
+            <span className={`font-semibold ${corContrato.texto}`}>
+              {corContrato.selo} {corContrato.rotulo} — {contrato.texto}
+            </span>
+            {aluno.tipo_acesso && (
+              <span className="text-slate-300">
+                {" "}· {ROTULO_TIPO_ACESSO[aluno.tipo_acesso as "contrato" | "experimental"]}
+                {aluno.contrato_meses && ` de ${aluno.contrato_meses} ${aluno.contrato_meses === 1 ? "mês" : "meses"}`}
+                {aluno.acesso_inicio && ` · início ${dataHora(aluno.acesso_inicio)}`}
+                {contrato.ultimoDia && ` · acesso até ${contrato.ultimoDia}`}
+              </span>
+            )}
+          </div>
+          {podeContrato ? (
+            <FormAcao acao={salvarContrato} botao="Salvar contrato">
+              <input type="hidden" name="aluno_id" value={id} />
+              <CamposContrato
+                titulo="Alterar / renovar"
+                tipo={(aluno.tipo_acesso as "contrato" | "experimental" | null) ?? "contrato"}
+                data={aluno.acesso_inicio && aluno.tipo_acesso === "contrato" ? paraInputData(aluno.acesso_inicio) : hojeLocal()}
+                dataHora={aluno.acesso_inicio && aluno.tipo_acesso === "experimental" ? paraInputDataHora(aluno.acesso_inicio) : agoraLocalInput()}
+                meses={aluno.contrato_meses ?? 6}
+              />
+              <p className="text-xs text-slate-500">
+                Para renovar, aumente a duração mantendo a data de início. Fora do período, o aluno não consegue entrar.
+              </p>
+            </FormAcao>
+          ) : (
+            <p className="text-xs text-slate-500">Só a coordenação altera o contrato.</p>
+          )}
+        </Cartao>
       </div>
 
       <Cartao titulo="🎓 Cursos do aluno">

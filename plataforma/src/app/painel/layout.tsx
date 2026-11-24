@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Cabecalho } from "@/components/cabecalho";
 import { exigirPapel } from "@/lib/auth";
+import { DIAS_AVISO_AMARELO, DIAS_AVISO_VERMELHO } from "@/lib/contrato";
 import type { Papel } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
@@ -11,7 +12,7 @@ type ItemMenu = {
   href: string;
   rotulo: string;
   papeis: Papel[];
-  contador?: "submissoes" | "compras" | "faltas";
+  contador?: "submissoes" | "compras" | "faltas" | "contratos";
 };
 
 const EQUIPE: Papel[] = ["admin", "diretor", "professor"];
@@ -22,6 +23,7 @@ const MENU: (ItemMenu | string)[] = [
   { href: "/painel/submissoes", rotulo: "🎯 Submissões", papeis: EQUIPE, contador: "submissoes" },
   { href: "/painel/alunos", rotulo: "🧑‍🎓 Alunos", papeis: EQUIPE },
   { href: "/painel/faltas", rotulo: "🚨 Faltas", papeis: EQUIPE, contador: "faltas" },
+  { href: "/painel/contratos", rotulo: "📄 Contratos", papeis: EQUIPE, contador: "contratos" },
   { href: "/painel/compras", rotulo: "🎮 Compras de horas", papeis: EQUIPE, contador: "compras" },
   "Conteúdo",
   { href: "/painel/aulas", rotulo: "🛠️ Aulas", papeis: EQUIPE },
@@ -39,11 +41,23 @@ export default async function PainelLayout({ children }: LayoutProps<"/painel">)
   const supabase = await createClient();
 
   // Contadores do menu (RLS já limita ao que cada um pode ver)
-  const [{ count: novas }, { count: compras }, { data: faltas }] = await Promise.all([
+  const agora = new Date();
+  const emDias = (d: number) => new Date(agora.getTime() + d * 24 * 60 * 60 * 1000).toISOString();
+  const [{ count: novas }, { count: compras }, { data: faltas }, { data: vencendo }] = await Promise.all([
     supabase.from("submissoes").select("id", { count: "exact", head: true }).eq("status", "nova"),
     supabase.from("compras").select("id", { count: "exact", head: true }).eq("status", "aguardando_aviso"),
     supabase.rpc("painel_faltas"),
+    // contratos vencendo em até 1 mês (ainda com acesso)
+    supabase
+      .from("perfis")
+      .select("acesso_fim")
+      .eq("papel", "aluno")
+      .eq("ativo", true)
+      .gt("acesso_fim", agora.toISOString())
+      .lte("acesso_fim", emDias(DIAS_AVISO_AMARELO)),
   ]);
+  const limiteVermelho = agora.getTime() + DIAS_AVISO_VERMELHO * 24 * 60 * 60 * 1000;
+  const vermelhoContratos = (vencendo ?? []).some((v) => new Date(v.acesso_fim!).getTime() <= limiteVermelho);
   const contadores = {
     submissoes: novas ?? 0,
     compras: compras ?? 0,
@@ -51,6 +65,7 @@ export default async function PainelLayout({ children }: LayoutProps<"/painel">)
       (faltas as { faltas: number; aviso_visto: boolean }[] | null)?.filter(
         (f) => f.faltas >= 2 && !f.aviso_visto,
       ).length ?? 0,
+    contratos: vencendo?.length ?? 0,
   };
 
   const itens = MENU.filter((m) => typeof m === "string" || m.papeis.includes(perfil.papel));
@@ -77,7 +92,13 @@ export default async function PainelLayout({ children }: LayoutProps<"/painel">)
                   >
                     {m.rotulo}
                     {m.contador && contadores[m.contador] > 0 && (
-                      <span className="rounded-full bg-red-500 px-2 text-xs font-bold text-white">
+                      <span
+                        className={`rounded-full px-2 text-xs font-bold ${
+                          m.contador === "contratos" && !vermelhoContratos
+                            ? "bg-amber-400 text-slate-950"
+                            : "bg-red-500 text-white"
+                        }`}
+                      >
                         {contadores[m.contador]}
                       </span>
                     )}

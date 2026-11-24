@@ -1,6 +1,15 @@
+import Link from "next/link";
+import { CamposContrato } from "@/components/campos-contrato";
 import { FormAcao } from "@/components/form-acao";
 import { Campo, Cartao, Expansivel, Selo, estiloInput } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
+import {
+  agoraLocalInput,
+  COR_SITUACAO,
+  hojeLocal,
+  statusContrato,
+  type DadosContrato,
+} from "@/lib/contrato";
 import { ROTULO_PAPEL } from "@/lib/rotulos";
 import type { Papel } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
@@ -18,7 +27,7 @@ type Usuario = {
   escola_id: string | null;
   turma_id: string | null;
   ativo: boolean;
-};
+} & DadosContrato;
 
 const texto = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
@@ -34,7 +43,7 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/painel/
   const supabase = await createClient();
   let consulta = supabase
     .from("perfis")
-    .select("id, nome, email, papel, escola_id, turma_id, ativo")
+    .select("id, nome, email, papel, escola_id, turma_id, ativo, tipo_acesso, acesso_inicio, acesso_fim, contrato_meses")
     .order("papel")
     .order("nome");
   if (fPapel) consulta = consulta.eq("papel", fPapel);
@@ -116,6 +125,11 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/painel/
             {selectEscola()}
             {selectTurma()}
           </div>
+          <CamposContrato
+            titulo="Acesso (só para aluno)"
+            data={hojeLocal()}
+            dataHora={agoraLocalInput()}
+          />
         </FormAcao>
       </Cartao>
 
@@ -179,6 +193,15 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/painel/
                     {u.papel !== "admin" && nomeEscola(u.escola_id)}
                     {u.papel === "aluno" && ` · ${nomeTurma(u.turma_id)}`}
                   </span>
+                  {u.papel === "aluno" && (() => {
+                    const st = statusContrato(u);
+                    const cor = COR_SITUACAO[st.situacao];
+                    return (
+                      <Link href={`/painel/alunos/${u.id}#contrato`} className={`text-sm hover:underline ${cor.texto}`}>
+                        {cor.selo} {u.tipo_acesso === "experimental" ? "🧪 " : ""}{st.texto}
+                      </Link>
+                    );
+                  })()}
                 </div>
                 {podeEditar && (
                   <div className="flex flex-wrap gap-6">
