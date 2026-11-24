@@ -1,5 +1,6 @@
+import { Inbox, CircleCheck, RotateCcw, List, ClipboardCheck, UserRound, Layers, Target, Clock, ExternalLink, MessageSquare, PartyPopper } from "lucide-react";
 import Link from "next/link";
-import { Cartao } from "@/components/ui";
+import { Aviso, Cartao, Etiqueta, Icone, Indicador, pilula, TituloPagina } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { AvaliarForm } from "./avaliar-form";
@@ -9,11 +10,11 @@ export const metadata = { title: "Submissões" };
 export const instant = false;
 
 const ABAS = [
-  { valor: "nova", rotulo: "🆕 Novas" },
-  { valor: "aprovada", rotulo: "✅ Aprovadas" },
-  { valor: "devolvida", rotulo: "🔙 Devolvidas" },
-  { valor: "todas", rotulo: "📊 Todas" },
-];
+  { valor: "nova", rotulo: "Novas", icone: Inbox, tom: "primaria" },
+  { valor: "aprovada", rotulo: "Aprovadas", icone: CircleCheck, tom: "sucesso" },
+  { valor: "devolvida", rotulo: "Devolvidas", icone: RotateCcw, tom: "atencao" },
+  { valor: "todas", rotulo: "Todas", icone: List, tom: "neutro" },
+] as const;
 
 type Linha = {
   id: string;
@@ -60,17 +61,13 @@ export default async function SubmissoesPage({ searchParams }: PageProps<"/paine
 
   return (
     <div className="flex max-w-5xl flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold">🎯 Torre de Controle — Submissões</h1>
-        <p className="text-sm text-slate-400">Avalie as tarefas enviadas pelos alunos</p>
-      </div>
+      <TituloPagina icone={ClipboardCheck} descricao="Avalie as tarefas enviadas pelos alunos">
+        Submissões
+      </TituloPagina>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        {(["nova", "aprovada", "devolvida"] as const).map((s) => (
-          <div key={s} className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
-            <p className="text-sm text-slate-400">{ABAS.find((a) => a.valor === s)?.rotulo}</p>
-            <p className="text-3xl font-bold">{total[s]}</p>
-          </div>
+        {ABAS.filter((a) => a.valor !== "todas").map((a) => (
+          <Indicador key={a.valor} valor={total[a.valor]} rotulo={a.rotulo} icone={a.icone} tom={a.tom} />
         ))}
       </div>
 
@@ -79,38 +76,45 @@ export default async function SubmissoesPage({ searchParams }: PageProps<"/paine
           <Link
             key={a.valor}
             href={`/painel/submissoes?status=${a.valor}`}
-            className={`rounded-full px-3 py-1 text-sm ${
-              a.valor === aba ? "bg-cyan-500 text-slate-950" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-            }`}
+            className={pilula(a.valor === aba)}
+            aria-current={a.valor === aba ? "page" : undefined}
           >
+            <Icone icone={a.icone} tamanho={16} />
             {a.rotulo}
           </Link>
         ))}
       </div>
 
       <Cartao>
-        {!linhas.length && <p className="text-slate-400">Nada por aqui. 🎉</p>}
-        <ul className="flex flex-col divide-y divide-slate-800">
+        {!linhas.length && <Aviso tom="sucesso" icone={PartyPopper}>Nada por aqui.</Aviso>}
+        <ul className="flex flex-col divide-y divide-borda">
           {linhas.map((s) => (
             <li key={s.id} className="flex flex-col gap-2 py-4">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                <span className="font-medium">🧑‍🎓 {s.aluno?.nome}</span>
-                <span className="text-slate-400">📚 {nomeTurma(s.aluno?.turma_id)}</span>
-                <span className="text-slate-300">
-                  🎯 #{s.aula?.numero_missao} {s.aula?.titulo}
+                <span className="inline-flex items-center gap-1.5 font-medium"><Icone icone={UserRound} tamanho={16} /> {s.aluno?.nome}</span>
+                <span className="inline-flex items-center gap-1.5 text-texto-suave"><Icone icone={Layers} tamanho={16} /> {nomeTurma(s.aluno?.turma_id)}</span>
+                <span className="inline-flex items-center gap-1.5 text-texto-medio">
+                  <Icone icone={Target} tamanho={16} /> Missão {s.aula?.numero_missao}: {s.aula?.titulo}
                 </span>
-                <span className="text-slate-500">⏱️ {dataHora(s.enviado_em)}</span>
-                <a href={s.link} target="_blank" rel="noreferrer" className="text-cyan-300 hover:underline">
-                  🔗 Acessar submissão ↗
+                <span className="inline-flex items-center gap-1.5 text-texto-suave"><Icone icone={Clock} tamanho={16} /> {dataHora(s.enviado_em)}</span>
+                <a href={s.link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-primaria-texto hover:underline">
+                  Acessar submissão <Icone icone={ExternalLink} tamanho={16} />
+                  <span className="sr-only">(abre em nova aba)</span>
                 </a>
               </div>
               {s.status === "nova" ? (
                 <AvaliarForm id={s.id} />
               ) : (
-                <p className="text-sm text-slate-400">
-                  {s.status === "aprovada" ? "✅ Aprovada" : "🔙 Devolvida"}
-                  {s.avaliado_em && ` em ${dataHora(s.avaliado_em)}`}
-                  {s.comentario && ` — 💬 ${s.comentario}`}
+                <p className="flex flex-wrap items-center gap-2 text-sm text-texto-suave">
+                  {s.status === "aprovada" ? (
+                    <Etiqueta tom="sucesso" icone={CircleCheck}>Aprovada</Etiqueta>
+                  ) : (
+                    <Etiqueta tom="atencao" icone={RotateCcw}>Devolvida</Etiqueta>
+                  )}
+                  {s.avaliado_em && `em ${dataHora(s.avaliado_em)}`}
+                  {s.comentario && (
+                    <span className="inline-flex items-center gap-1.5"><Icone icone={MessageSquare} tamanho={16} /> {s.comentario}</span>
+                  )}
                 </p>
               )}
             </li>

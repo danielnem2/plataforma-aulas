@@ -1,5 +1,6 @@
+import { Map as MapIcon } from "lucide-react";
 import Link from "next/link";
-import { Cartao } from "@/components/ui";
+import { Cartao, pilula, TituloPagina } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import { carregarMapa, cursosDoAluno } from "@/lib/mapa";
 import { MapaAluno } from "./mapa-aluno";
@@ -15,8 +16,8 @@ export default async function AlunoPage({ searchParams }: PageProps<"/aluno">) {
 
   if (!cursos.length) {
     return (
-      <Cartao titulo="🗺️ Mapa do Mundo">
-        <p className="text-slate-300">
+      <Cartao titulo="Mapa do Mundo" icone={MapIcon}>
+        <p className="text-texto-medio">
           Olá, {perfil.nome}! Você ainda não tem nenhum curso liberado. Fale com seu professor.
         </p>
       </Cartao>
@@ -29,19 +30,16 @@ export default async function AlunoPage({ searchParams }: PageProps<"/aluno">) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">🗺️ Mapa de Habilidades</h1>
-          <p className="text-sm text-slate-400">Explore sua jornada e complete as missões</p>
-        </div>
+        <TituloPagina icone={MapIcon} descricao="Explore sua jornada e complete as missões">
+          Mapa de Habilidades
+        </TituloPagina>
         {cursos.length > 1 && (
           <div className="flex gap-2">
             {cursos.map((c) => (
               <Link
                 key={c.id}
                 href={`/aluno?curso=${c.id}`}
-                className={`rounded-full px-3 py-1 text-sm ${
-                  c.id === cursoAtual.id ? "bg-cyan-500 text-slate-950" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-                }`}
+                className={pilula(c.id === cursoAtual.id)}
               >
                 {c.nome}
               </Link>

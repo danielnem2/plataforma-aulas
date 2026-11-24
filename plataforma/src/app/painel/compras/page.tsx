@@ -1,6 +1,7 @@
+import { Gamepad2, Hourglass, CircleCheck, Coins } from "lucide-react";
 import Link from "next/link";
 import { FormAcao } from "@/components/form-acao";
-import { Cartao } from "@/components/ui";
+import { Cartao, Icone, pilula, TituloPagina } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { marcarAvisado } from "./actions";
@@ -45,45 +46,44 @@ export default async function ComprasPage({ searchParams }: PageProps<"/painel/c
   return (
     <div className="flex max-w-4xl flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold">🎮 Compras de horas na Gaming House</h1>
-        <p className="text-sm text-slate-400">
+        <TituloPagina icone={Gamepad2}>Compras de horas na Gaming House</TituloPagina>
+        <p className="text-sm text-texto-suave">
           Quando um aluno compra horas, avise a Gaming House e marque como avisado.
         </p>
       </div>
 
       <div className="flex gap-2">
         {[
-          { v: "aguardando_aviso", r: "⏳ Aguardando aviso" },
-          { v: "avisado", r: "✅ Avisadas" },
+          { v: "aguardando_aviso", r: "Aguardando aviso", i: Hourglass },
+          { v: "avisado", r: "Avisadas", i: CircleCheck },
         ].map((a) => (
           <Link
             key={a.v}
             href={`/painel/compras?status=${a.v}`}
-            className={`rounded-full px-3 py-1 text-sm ${
-              a.v === aba ? "bg-cyan-500 text-slate-950" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-            }`}
+            className={pilula(a.v === aba)}
           >
+            <Icone icone={a.i} tamanho={16} />
             {a.r}
           </Link>
         ))}
       </div>
 
       <Cartao>
-        {!linhas.length && <p className="text-slate-400">Nenhuma compra aqui.</p>}
-        <ul className="flex flex-col divide-y divide-slate-800">
+        {!linhas.length && <p className="text-texto-suave">Nenhuma compra aqui.</p>}
+        <ul className="flex flex-col divide-y divide-borda">
           {linhas.map((c) => (
             <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
               <span>
                 <Link href={`/painel/alunos/${c.aluno?.id}`} className="font-medium hover:underline">
                   {c.aluno?.nome}
                 </Link>{" "}
-                <span className="text-slate-400">({nomeTurma(c.aluno?.turma_id)})</span> comprou{" "}
-                <strong>{c.item?.horas}h</strong> — {c.item?.nome} · 🪙 {c.preco_pago} ·{" "}
-                <span className="text-slate-500">{dataHora(c.criado_em)}</span>
-                {c.avisado_em && <span className="text-emerald-300"> · avisado em {dataHora(c.avisado_em)}</span>}
+                <span className="text-texto-suave">({nomeTurma(c.aluno?.turma_id)})</span> comprou{" "}
+                <strong>{c.item?.horas}h</strong> — {c.item?.nome} · {c.preco_pago} Gold ·{" "}
+                <span className="text-texto-suave">{dataHora(c.criado_em)}</span>
+                {c.avisado_em && <span className="text-sucesso"> · avisado em {dataHora(c.avisado_em)}</span>}
               </span>
               {c.status === "aguardando_aviso" && (
-                <FormAcao acao={marcarAvisado} botao="✅ Avisei a Gaming House">
+                <FormAcao acao={marcarAvisado} botao="Avisei a Gaming House" variante="sucesso">
                   <input type="hidden" name="id" value={c.id} />
                 </FormAcao>
               )}

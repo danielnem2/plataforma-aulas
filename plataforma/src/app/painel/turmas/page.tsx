@@ -1,5 +1,6 @@
+import { Layers, Plus } from "lucide-react";
 import { FormAcao } from "@/components/form-acao";
-import { Campo, Cartao, Expansivel, Selo, estiloInput } from "@/components/ui";
+import { botao, Campo, Cartao, estiloInput, Expansivel, Selo, TituloPagina } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import { DIAS_SEMANA, ROTULO_PERIODO, hora, type Periodo } from "@/lib/rotulos";
 import { createClient } from "@/lib/supabase/server";
@@ -92,24 +93,24 @@ export default async function TurmasPage({ searchParams }: PageProps<"/painel/tu
 
   return (
     <div className="flex max-w-5xl flex-col gap-6">
-      <h1 className="text-2xl font-bold">📚 Turmas</h1>
+      <TituloPagina icone={Layers}>Turmas</TituloPagina>
 
       {ehAdmin && !escolas?.length ? (
         <Cartao>
-          <p className="text-slate-300">Cadastre uma escola primeiro (menu Escolas).</p>
+          <p className="text-texto-medio">Cadastre uma escola primeiro (menu Escolas).</p>
         </Cartao>
       ) : (
-        <Cartao titulo="Nova turma">
+        <Cartao titulo="Nova turma" icone={Plus}>
           <FormAcao acao={criarTurma} botao="Criar turma" limparAoSalvar>
             {camposTurma()}
           </FormAcao>
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-texto-suave">
             Os professores são escolhidos em &quot;Editar&quot;, depois que a turma existe.
           </p>
         </Cartao>
       )}
 
-      <Cartao titulo={`${turmas?.length ?? 0} turma(s)`}>
+      <Cartao titulo={`${turmas?.length ?? 0} turma(s)`} icone={Layers}>
         {ehAdmin && (escolas?.length ?? 0) > 1 && (
           <form className="mb-4 flex items-end gap-2">
             <Campo rotulo="Filtrar por escola">
@@ -120,13 +121,13 @@ export default async function TurmasPage({ searchParams }: PageProps<"/painel/tu
                 ))}
               </select>
             </Campo>
-            <button className="rounded-lg bg-slate-700 px-3 py-2 text-sm hover:bg-slate-600">Filtrar</button>
+            <button className={botao("secundario")}>Filtrar</button>
           </form>
         )}
 
-        {!turmas?.length && <p className="text-slate-400">Nenhuma turma cadastrada.</p>}
+        {!turmas?.length && <p className="text-texto-suave">Nenhuma turma cadastrada.</p>}
 
-        <ul className="flex flex-col divide-y divide-slate-800">
+        <ul className="flex flex-col divide-y divide-borda">
           {(turmas as Turma[] | null)?.map((t) => {
             const profsDaTurma = vinculos?.filter((v) => v.turma_id === t.id).map((v) => v.professor_id) ?? [];
             const profsDaEscola = professores?.filter((p) => p.escola_id === t.escola_id) ?? [];
@@ -136,7 +137,7 @@ export default async function TurmasPage({ searchParams }: PageProps<"/painel/tu
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="font-medium">{t.nome}</span>
                   <Selo ativo={t.ativa} />
-                  <span className="text-sm text-slate-400">
+                  <span className="text-sm text-texto-suave">
                     {ehAdmin && `${nomeEscola(t.escola_id)} · `}
                     {DIAS_SEMANA[t.dia_semana]} {hora(t.horario_inicio)}–{hora(t.horario_fim)} ·{" "}
                     {ROTULO_PERIODO[t.periodo]} · {qtdAlunos} aluno(s) · Prof.:{" "}
@@ -150,14 +151,14 @@ export default async function TurmasPage({ searchParams }: PageProps<"/painel/tu
                     <input type="hidden" name="id" value={t.id} />
                     {camposTurma(t)}
                     <fieldset className="flex flex-col gap-1">
-                      <legend className="mb-1 text-sm text-slate-300">Professores da turma</legend>
+                      <legend className="mb-1 text-sm text-texto-medio">Professores da turma</legend>
                       {!profsDaEscola.length && (
-                        <span className="text-sm text-slate-500">
+                        <span className="text-sm text-texto-suave">
                           Nenhum professor nesta escola. Cadastre em Usuários.
                         </span>
                       )}
                       {profsDaEscola.map((p) => (
-                        <label key={p.id} className="flex items-center gap-2 text-sm text-slate-300">
+                        <label key={p.id} className="flex items-center gap-2 text-sm text-texto-medio">
                           <input
                             type="checkbox"
                             name="professores"
@@ -168,7 +169,7 @@ export default async function TurmasPage({ searchParams }: PageProps<"/painel/tu
                         </label>
                       ))}
                     </fieldset>
-                    <label className="flex items-center gap-2 text-sm text-slate-300">
+                    <label className="flex items-center gap-2 text-sm text-texto-medio">
                       <input type="checkbox" name="ativa" defaultChecked={t.ativa} /> Turma ativa
                     </label>
                   </FormAcao>
@@ -177,7 +178,7 @@ export default async function TurmasPage({ searchParams }: PageProps<"/painel/tu
             );
           })}
         </ul>
-        <p className="mt-4 text-xs text-slate-500">
+        <p className="mt-4 text-xs text-texto-suave">
           Para colocar alunos numa turma, use a tela Usuários.
         </p>
       </Cartao>

@@ -5,6 +5,19 @@
  * Aviso no painel: amarelo faltando 1 mês, vermelho faltando 1 semana.
  */
 
+import {
+  CalendarClock,
+  CircleAlert,
+  CircleCheck,
+  CircleDashed,
+  CircleX,
+  FileText,
+  FlaskConical,
+  TriangleAlert,
+  type LucideIcon,
+} from "lucide-react";
+import type { Tom } from "@/components/ui";
+
 export type TipoAcesso = "contrato" | "experimental";
 
 export type DadosContrato = {
@@ -141,16 +154,22 @@ export function acessoLiberado(c: DadosContrato, agora = new Date()) {
   return s !== "a_comecar" && s !== "vencido";
 }
 
-export const COR_SITUACAO: Record<Situacao, { fundo: string; texto: string; selo: string; rotulo: string }> = {
-  vence_semana: { fundo: "bg-red-500/15", texto: "text-red-300", selo: "🔴", rotulo: "Vence em até 1 semana" },
-  vence_mes: { fundo: "bg-amber-500/15", texto: "text-amber-300", selo: "🟡", rotulo: "Vence em até 1 mês" },
-  em_dia: { fundo: "", texto: "text-emerald-300", selo: "🟢", rotulo: "Em dia" },
-  a_comecar: { fundo: "", texto: "text-sky-300", selo: "🔵", rotulo: "Ainda não começou" },
-  vencido: { fundo: "bg-slate-700/30", texto: "text-slate-400", selo: "⚫", rotulo: "Vencido" },
-  sem_contrato: { fundo: "", texto: "text-slate-400", selo: "⚪", rotulo: "Sem contrato" },
+/** Visual de cada situação: sempre ícone + texto + cor (nunca só a cor) */
+export const COR_SITUACAO: Record<Situacao, { tom: Tom; icone: LucideIcon; fundo: string; rotulo: string }> = {
+  vence_semana: { tom: "perigo", icone: CircleAlert, fundo: "bg-perigo-suave", rotulo: "Vence em até 1 semana" },
+  vence_mes: { tom: "aviso", icone: TriangleAlert, fundo: "bg-aviso-suave", rotulo: "Vence em até 1 mês" },
+  em_dia: { tom: "sucesso", icone: CircleCheck, fundo: "", rotulo: "Em dia" },
+  a_comecar: { tom: "info", icone: CalendarClock, fundo: "", rotulo: "Ainda não começou" },
+  vencido: { tom: "neutro", icone: CircleX, fundo: "bg-elevado", rotulo: "Vencido" },
+  sem_contrato: { tom: "neutro", icone: CircleDashed, fundo: "", rotulo: "Sem contrato" },
 };
 
 export const ROTULO_TIPO_ACESSO: Record<TipoAcesso, string> = {
-  contrato: "📄 Contrato",
-  experimental: "🧪 Aula experimental",
+  contrato: "Contrato",
+  experimental: "Aula experimental",
+};
+
+export const ICONE_TIPO_ACESSO: Record<TipoAcesso, LucideIcon> = {
+  contrato: FileText,
+  experimental: FlaskConical,
 };

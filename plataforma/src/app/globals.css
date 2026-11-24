@@ -1,5 +1,176 @@
 @import "tailwindcss";
 
-body {
-  font-family: system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+/*
+ * Paleta "calma" — pensada para crianças com TEA e TDAH:
+ * - fundo papel (sem branco puro, que ofusca) e texto grafite (sem preto puro)
+ * - cores dessaturadas, sem neon; nada pisca nem chama atenção sem motivo
+ * - tema claro é o padrão; o escuro (estilo VS Code) é escolhido no botão do topo
+ * - todo texto passa no contraste WCAG AA (≥ 4,5:1); bordas de campos ≥ 3:1
+ * - cor nunca é a única pista: status sempre vem com ícone + texto
+ * Use SEMPRE os nomes semânticos abaixo (bg-superficie, text-perigo...),
+ * nunca cores do Tailwind direto (slate, cyan...).
+ */
+:root {
+  --fundo: #f4f1ea;
+  --superficie: #fbfaf6;
+  --elevado: #eeeae1;
+  --elevado-2: #e4dfd4;
+  --borda: #dcd6ca;
+  --borda-forte: #8f887b;
+  --texto: #273041;
+  --texto-medio: #3f4859;
+  --texto-suave: #5c6575;
+
+  --primaria: #3b6788;
+  --primaria-forte: #2f5672;
+  --primaria-texto: #2f5f80;
+  --primaria-suave: #dde8ef;
+
+  --sucesso: #3a7354;
+  --sucesso-suave: #dcede2;
+  --aviso: #7a560f;
+  --aviso-suave: #f8ebcb;
+  --perigo: #9e3f37;
+  --perigo-suave: #f5dfda;
+  --atencao: #9a5420;
+  --atencao-suave: #f6e2d2;
+  --especial: #6a5596;
+  --especial-suave: #e8e2f2;
+  --info: #2f6f73;
+  --info-suave: #daecec;
+
+  --sobre-cor: #ffffff;
+  --sobre-primaria: #ffffff;
+  --sobreposicao: rgb(39 48 65 / 0.55);
+  color-scheme: light;
+}
+
+/*
+ * Modo escuro no estilo do Visual Studio Code (Dark+), ligado pelo botão do topo.
+ * Também passa no contraste AA. Botões principais azuis com texto branco, como no VS Code.
+ */
+:root[data-tema="escuro"] {
+  --fundo: #1e1e1e;
+  --superficie: #252526;
+  --elevado: #2d2d30;
+  --elevado-2: #37373d;
+  --borda: #3c3c3c;
+  --borda-forte: #7a7a7a;
+  --texto: #d4d4d4;
+  --texto-medio: #cccccc;
+  --texto-suave: #a6a6a6;
+
+  --primaria: #0e639c;
+  --primaria-forte: #1177bb;
+  --primaria-texto: #4fc1ff;
+  --primaria-suave: #04395e;
+
+  --sucesso: #89d185;
+  --sucesso-suave: #1f3523;
+  --aviso: #cca700;
+  --aviso-suave: #3a3214;
+  --perigo: #f48771;
+  --perigo-suave: #4b2522;
+  --atencao: #ce9178;
+  --atencao-suave: #3f2c22;
+  --especial: #c586c0;
+  --especial-suave: #3b2a3a;
+  --info: #4ec9b0;
+  --info-suave: #1d3b36;
+
+  --sobre-cor: #1e1e1e;
+  --sobre-primaria: #ffffff;
+  --sobreposicao: rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+/* variante "escuro:" para classes que mudam só no modo escuro */
+@custom-variant escuro (&:where([data-tema="escuro"], [data-tema="escuro"] *));
+
+@theme inline {
+  --color-fundo: var(--fundo);
+  --color-superficie: var(--superficie);
+  --color-elevado: var(--elevado);
+  --color-elevado-2: var(--elevado-2);
+  --color-borda: var(--borda);
+  --color-borda-forte: var(--borda-forte);
+  --color-texto: var(--texto);
+  --color-texto-medio: var(--texto-medio);
+  --color-texto-suave: var(--texto-suave);
+  --color-primaria: var(--primaria);
+  --color-primaria-forte: var(--primaria-forte);
+  --color-primaria-texto: var(--primaria-texto);
+  --color-primaria-suave: var(--primaria-suave);
+  --color-sucesso: var(--sucesso);
+  --color-sucesso-suave: var(--sucesso-suave);
+  --color-aviso: var(--aviso);
+  --color-aviso-suave: var(--aviso-suave);
+  --color-perigo: var(--perigo);
+  --color-perigo-suave: var(--perigo-suave);
+  --color-atencao: var(--atencao);
+  --color-atencao-suave: var(--atencao-suave);
+  --color-especial: var(--especial);
+  --color-especial-suave: var(--especial-suave);
+  --color-info: var(--info);
+  --color-info-suave: var(--info-suave);
+  --color-sobre-cor: var(--sobre-cor);
+  --color-sobre-primaria: var(--sobre-primaria);
+  --color-sobreposicao: var(--sobreposicao);
+
+  --font-sans: var(--fonte-lexend), system-ui, "Segoe UI", Arial, sans-serif;
+
+  /* textos pequenos um pouco maiores que o padrão (leitura de crianças) */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.25rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.5rem;
+}
+
+@layer base {
+  html {
+    font-size: 100%;
+  }
+  body {
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+  }
+
+  /* Foco sempre bem visível para quem usa teclado */
+  :focus-visible {
+    outline: 3px solid var(--primaria);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Áreas de clique confortáveis */
+  button,
+  [role="button"],
+  summary,
+  input[type="checkbox"],
+  input[type="radio"] {
+    cursor: pointer;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 1.125rem;
+    height: 1.125rem;
+    accent-color: var(--primaria);
+  }
+
+  ::selection {
+    background: var(--primaria-suave);
+    color: var(--texto);
+  }
+}
+
+/* Quem pede menos movimento no sistema não vê animações nem transições */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

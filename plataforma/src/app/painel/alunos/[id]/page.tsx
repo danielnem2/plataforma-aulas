@@ -2,7 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapaAluno } from "@/app/aluno/mapa-aluno";
 import { FormAcao } from "@/components/form-acao";
-import { Campo, Cartao, estiloInput } from "@/components/ui";
+import {
+  ArrowLeft,
+  CalendarCheck,
+  Coins,
+  GraduationCap,
+  LockOpen,
+  Map as MapIcon,
+  ShoppingBag,
+  UserRound,
+  FileText,
+} from "lucide-react";
+import { Campo, Cartao, estiloInput, Etiqueta, Icone, pilula, TituloPagina, TOM_TEXTO } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import { corFalta } from "@/lib/faltas";
 import { carregarMapa } from "@/lib/mapa";
@@ -28,11 +39,11 @@ const dataHora = (iso: string) =>
   new Date(iso).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
 
 const ROTULO_ESTADO: Record<string, string> = {
-  concluida: "✓ Concluída",
-  disponivel: "► Disponível",
-  pendente: "⏳ Aguardando avaliação",
-  devolvida: "🔙 Devolvida",
-  bloqueada: "🔒 Bloqueada",
+  concluida: "Concluída",
+  disponivel: "Disponível",
+  pendente: "Aguardando avaliação",
+  devolvida: "Devolvida",
+  bloqueada: "Bloqueada",
 };
 
 const MOTIVO_GOLD: Record<string, string> = {
@@ -93,26 +104,28 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
 
   return (
     <div className="flex max-w-6xl flex-col gap-6">
-      <div>
-        <Link href="/painel/alunos" className="text-sm text-cyan-300 hover:underline">← Alunos</Link>
-        <h1 className="mt-1 text-2xl font-bold">🧑‍🎓 {aluno.nome}</h1>
-        <p className="text-sm text-slate-400">
-          {aluno.email} · Turma: {turma?.nome ?? "—"} · 🪙 {aluno.gold_saldo} ·{" "}
-          <span className={cor.texto}>
-            {cor.selo} {(faltas as number | null) ?? 0} falta(s) seguida(s)
-          </span>
-          {!aluno.ativo && " · (inativo)"}
-        </p>
+      <div className="flex flex-col gap-2">
+        <Link href="/painel/alunos" className="inline-flex w-fit items-center gap-1 text-sm font-medium text-primaria-texto hover:underline">
+          <Icone icone={ArrowLeft} tamanho={16} /> Alunos
+        </Link>
+        <TituloPagina icone={UserRound}>{aluno.nome}</TituloPagina>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-texto-suave">
+          <span>{aluno.email}</span>
+          <span>· Turma: {turma?.nome ?? "—"}</span>
+          <Etiqueta tom="aviso" icone={Coins}>{aluno.gold_saldo} Gold</Etiqueta>
+          <Etiqueta tom={cor.tom} icone={cor.icone}>{(faltas as number | null) ?? 0} falta(s) seguida(s)</Etiqueta>
+          {!aluno.ativo && <Etiqueta>inativo</Etiqueta>}
+        </div>
       </div>
 
       <div id="contrato">
-        <Cartao titulo="📄 Contrato / acesso">
+        <Cartao titulo="Contrato / acesso" icone={FileText}>
           <div className={`mb-3 rounded-lg p-3 text-sm ${corContrato.fundo}`}>
-            <span className={`font-semibold ${corContrato.texto}`}>
-              {corContrato.selo} {corContrato.rotulo} — {contrato.texto}
+            <span className={`inline-flex items-center gap-1.5 font-semibold ${TOM_TEXTO[corContrato.tom]}`}>
+              <Icone icone={corContrato.icone} tamanho={16} /> {corContrato.rotulo} — {contrato.texto}
             </span>
             {aluno.tipo_acesso && (
-              <span className="text-slate-300">
+              <span className="text-texto-medio">
                 {" "}· {ROTULO_TIPO_ACESSO[aluno.tipo_acesso as "contrato" | "experimental"]}
                 {aluno.contrato_meses && ` de ${aluno.contrato_meses} ${aluno.contrato_meses === 1 ? "mês" : "meses"}`}
                 {aluno.acesso_inicio && ` · início ${dataHora(aluno.acesso_inicio)}`}
@@ -130,17 +143,17 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
                 dataHora={aluno.acesso_inicio && aluno.tipo_acesso === "experimental" ? paraInputDataHora(aluno.acesso_inicio) : agoraLocalInput()}
                 meses={aluno.contrato_meses ?? 6}
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-texto-suave">
                 Para renovar, aumente a duração mantendo a data de início. Fora do período, o aluno não consegue entrar.
               </p>
             </FormAcao>
           ) : (
-            <p className="text-xs text-slate-500">Só a coordenação altera o contrato.</p>
+            <p className="text-xs text-texto-suave">Só a coordenação altera o contrato.</p>
           )}
         </Cartao>
       </div>
 
-      <Cartao titulo="🎓 Cursos do aluno">
+      <Cartao titulo="Cursos do aluno" icone={GraduationCap}>
         <FormAcao acao={salvarCursosAluno} botao="Salvar cursos">
           <input type="hidden" name="aluno_id" value={id} />
           <div className="flex flex-col gap-2">
@@ -148,10 +161,10 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
               const m = matriculas?.find((x) => x.curso_id === c.id);
               return (
                 <div key={c.id} className="flex flex-wrap items-center gap-6 text-sm">
-                  <label className="flex items-center gap-2">
+                  <label className="flex min-h-10 items-center gap-2">
                     <input type="checkbox" name="cursos" value={c.id} defaultChecked={!!m} /> {c.nome}
                   </label>
-                  <label className="flex items-center gap-2 text-slate-400">
+                  <label className="flex min-h-10 items-center gap-2 text-texto-suave">
                     <input type="checkbox" name="tudo_liberado" value={c.id} defaultChecked={m?.tudo_liberado} />
                     Liberar o curso inteiro (ignora dependências)
                   </label>
@@ -163,7 +176,7 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
       </Cartao>
 
       {mapa && cursoMapa && (
-        <Cartao titulo="🗺️ Mapa do aluno">
+        <Cartao titulo="Mapa do aluno" icone={MapIcon}>
           {cursosDoAluno.length > 1 && (
             <div className="mb-3 flex gap-2">
               {cursos
@@ -172,9 +185,7 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
                   <Link
                     key={c.id}
                     href={`/painel/alunos/${id}?curso=${c.id}`}
-                    className={`rounded-full px-3 py-1 text-sm ${
-                      c.id === cursoMapa ? "bg-cyan-500 text-slate-950" : "bg-slate-800 text-slate-300"
-                    }`}
+                    className={pilula(c.id === cursoMapa)}
                   >
                     {c.nome}
                   </Link>
@@ -183,14 +194,14 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
           )}
           <MapaAluno {...mapa} somenteLeitura />
 
-          <h3 className="mb-2 mt-5 font-semibold">🔓 Liberar aulas individualmente</h3>
-          <ul className="flex flex-col divide-y divide-slate-800 text-sm">
+          <h3 className="mb-2 mt-5 flex items-center gap-2 font-semibold"><Icone icone={LockOpen} /> Liberar aulas individualmente</h3>
+          <ul className="flex flex-col divide-y divide-borda text-sm">
             {mapa.nos.map((n) => (
               <li key={n.id} className="flex flex-wrap items-center justify-between gap-3 py-2">
                 <span>
                   #{n.numero_missao} {n.titulo}{" "}
-                  <span className="text-slate-400">— {ROTULO_ESTADO[n.estado ?? "bloqueada"]}</span>
-                  {n.liberada_manualmente && <span className="text-violet-300"> · 🔓 liberada manualmente</span>}
+                  <span className="text-texto-suave">— {ROTULO_ESTADO[n.estado ?? "bloqueada"]}</span>
+                  {n.liberada_manualmente && <Etiqueta tom="especial" icone={LockOpen} className="ml-1">liberada manualmente</Etiqueta>}
                 </span>
                 {n.liberada_manualmente ? (
                   <FormAcao acao={revogarAula} botao="Bloquear de novo">
@@ -207,7 +218,7 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
             ))}
           </ul>
           {!!liberacoes?.length && (
-            <details className="mt-3 text-sm text-slate-400">
+            <details className="mt-3 text-sm text-texto-suave">
               <summary className="cursor-pointer">Histórico de liberações</summary>
               <ul className="mt-2 flex flex-col gap-1">
                 {liberacoes.map((l, i) => (
@@ -224,9 +235,9 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Cartao titulo="📅 Presenças (últimas 20)">
-          {!presencas?.length && <p className="text-sm text-slate-400">Nenhuma presença registrada.</p>}
-          <ul className="flex flex-col gap-1 text-sm text-slate-300">
+        <Cartao titulo="Presenças (últimas 20)" icone={CalendarCheck}>
+          {!presencas?.length && <p className="text-sm text-texto-suave">Nenhuma presença registrada.</p>}
+          <ul className="flex flex-col gap-1 text-sm text-texto-medio">
             {presencas?.map((p) => (
               <li key={p.data}>
                 {data(p.data + "T12:00:00")} — login às{" "}
@@ -240,16 +251,16 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
           </ul>
         </Cartao>
 
-        <Cartao titulo="🪙 Extrato de Gold">
-          {!extrato?.length && <p className="text-sm text-slate-400">Sem movimentações.</p>}
+        <Cartao titulo="Extrato de Gold" icone={Coins}>
+          {!extrato?.length && <p className="text-sm text-texto-suave">Sem movimentações.</p>}
           <ul className="flex flex-col gap-1 text-sm">
             {extrato?.map((t, i) => (
               <li key={i} className="flex justify-between gap-3">
-                <span className="text-slate-300">
+                <span className="text-texto-medio">
                   {dataHora(t.criado_em)} · {MOTIVO_GOLD[t.motivo]}
                   {t.descricao && ` — ${t.descricao}`}
                 </span>
-                <span className={t.valor > 0 ? "text-emerald-300" : "text-red-300"}>
+                <span className={t.valor > 0 ? "text-sucesso" : "text-perigo"}>
                   {t.valor > 0 ? "+" : ""}
                   {t.valor}
                 </span>
@@ -257,7 +268,7 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
             ))}
           </ul>
           {(perfil.papel === "admin" || perfil.papel === "diretor") && (
-            <div className="mt-4 border-t border-slate-800 pt-4">
+            <div className="mt-4 border-t border-borda pt-4">
               <FormAcao acao={ajustarGold} botao="Ajustar Gold" limparAoSalvar>
                 <input type="hidden" name="aluno_id" value={id} />
                 <div className="grid gap-2 sm:grid-cols-[1fr_2fr]">
@@ -274,15 +285,19 @@ export default async function AlunoDetalhePage({ params, searchParams }: PagePro
         </Cartao>
       </div>
 
-      <Cartao titulo="🛒 Compras">
-        {!compras?.length && <p className="text-sm text-slate-400">Nenhuma compra.</p>}
-        <ul className="flex flex-col gap-1 text-sm text-slate-300">
+      <Cartao titulo="Compras" icone={ShoppingBag}>
+        {!compras?.length && <p className="text-sm text-texto-suave">Nenhuma compra.</p>}
+        <ul className="flex flex-col gap-1 text-sm text-texto-medio">
           {compras?.map((c) => {
             const item = c.item as unknown as { nome: string; tipo: string } | null;
             return (
               <li key={c.id}>
-                {dataHora(c.criado_em)} · {item?.nome} · 🪙 {c.preco_pago} ·{" "}
-                {c.status === "aguardando_aviso" ? "⏳ aguardando aviso à Gaming House" : c.status === "avisado" ? "✅ avisado" : "✅ entregue"}
+                {dataHora(c.criado_em)} · {item?.nome} · {c.preco_pago} Gold ·{" "}
+                {c.status === "aguardando_aviso" ? (
+                  <Etiqueta tom="aviso">aguardando aviso à Gaming House</Etiqueta>
+                ) : (
+                  <Etiqueta tom="sucesso">{c.status === "avisado" ? "avisado" : "entregue"}</Etiqueta>
+                )}
               </li>
             );
           })}

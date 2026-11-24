@@ -1,6 +1,8 @@
 "use client";
 
+import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Icone } from "@/components/ui";
 import { DURACAO_SESSAO_MS } from "@/lib/supabase/config";
 
 const AVISAR_ANTES_MS = 10 * 60 * 1000;
@@ -27,8 +29,9 @@ export function AvisoSessao({ loginEm }: { loginEm: string | null }) {
 
   if (restante === null || restante > AVISAR_ANTES_MS) return null;
   return (
-    <span className="rounded-full bg-amber-500/20 px-3 py-1 text-amber-200" role="status">
-      ⏰ Sessão expira em {Math.ceil(restante / 60000)} min — salve seu trabalho
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-aviso-suave px-3 py-1 font-medium text-aviso" role="status">
+      <Icone icone={Clock} tamanho={16} />
+      Sessão expira em {Math.ceil(restante / 60000)} min — salve seu trabalho
     </span>
   );
 }

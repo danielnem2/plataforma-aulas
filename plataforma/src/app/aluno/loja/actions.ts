@@ -17,5 +17,5 @@ export async function comprar(_: EstadoAcao, formData: FormData): Promise<Estado
     return { erro: "Não foi possível comprar." };
   }
   refresh();
-  return { ok: "Comprado! 🎉" };
+  return { ok: "Comprado!" };
 }

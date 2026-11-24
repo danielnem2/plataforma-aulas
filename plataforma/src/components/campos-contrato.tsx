@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { estiloInput } from "@/components/ui";
+import { FileText, FlaskConical } from "lucide-react";
+import { estiloInput, Icone } from "@/components/ui";
 import {
   HORAS_EXPERIMENTAL,
   MESES_OPCOES,
@@ -39,26 +40,26 @@ export function CamposContrato({
   })();
 
   return (
-    <fieldset className="flex flex-col gap-3 rounded-lg border border-slate-700 p-3">
-      <legend className="px-1 text-sm text-slate-300">{titulo}</legend>
+    <fieldset className="flex flex-col gap-3 rounded-lg border border-borda p-3">
+      <legend className="px-1 text-sm font-medium text-texto-medio">{titulo}</legend>
       <div className="flex flex-wrap gap-4 text-sm">
-        <label className="flex items-center gap-2">
+        <label className="flex min-h-10 items-center gap-2">
           <input type="radio" name="tipo_acesso" value="contrato" checked={tipo === "contrato"} onChange={() => setTipo("contrato")} />
-          📄 Contrato (meses)
+          <Icone icone={FileText} tamanho={16} /> Contrato (meses)
         </label>
-        <label className="flex items-center gap-2">
+        <label className="flex min-h-10 items-center gap-2">
           <input type="radio" name="tipo_acesso" value="experimental" checked={tipo === "experimental"} onChange={() => setTipo("experimental")} />
-          🧪 Aula experimental ({HORAS_EXPERIMENTAL}h)
+          <Icone icone={FlaskConical} tamanho={16} /> Aula experimental ({HORAS_EXPERIMENTAL}h)
         </label>
       </div>
 
       {tipo === "contrato" ? (
         <div className="grid gap-3 sm:grid-cols-3">
-          <label className="flex flex-col gap-1 text-sm text-slate-300">
+          <label className="flex flex-col gap-1 text-sm font-medium text-texto-medio">
             Data de início *
             <input name="acesso_data" type="date" required value={data} onChange={(e) => setData(e.target.value)} className={estiloInput} />
           </label>
-          <label className="flex flex-col gap-1 text-sm text-slate-300">
+          <label className="flex flex-col gap-1 text-sm font-medium text-texto-medio">
             Duração *
             <select name="contrato_meses" value={meses} onChange={(e) => setMeses(Number(e.target.value))} className={estiloInput}>
               {opcoes.map((m) => (
@@ -66,17 +67,17 @@ export function CamposContrato({
               ))}
             </select>
           </label>
-          <p className="self-end pb-2 text-sm text-slate-400">
-            {ultimoDia && <>Acesso até <strong className="text-slate-200">{ultimoDia}</strong></>}
+          <p className="self-end pb-2 text-sm text-texto-suave">
+            {ultimoDia && <>Acesso até <strong className="text-texto">{ultimoDia}</strong></>}
           </p>
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-3">
-          <label className="flex flex-col gap-1 text-sm text-slate-300">
+          <label className="flex flex-col gap-1 text-sm font-medium text-texto-medio">
             Início do acesso *
             <input name="acesso_data_hora" type="datetime-local" required defaultValue={dataHoraInicial} className={estiloInput} />
           </label>
-          <p className="self-end pb-2 text-sm text-slate-400 sm:col-span-2">
+          <p className="self-end pb-2 text-sm text-texto-suave sm:col-span-2">
             O aluno entra por {HORAS_EXPERIMENTAL} horas a partir desse horário. Depois, é só mudar para contrato.
           </p>
         </div>

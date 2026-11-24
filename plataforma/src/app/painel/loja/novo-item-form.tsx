@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Campo, estiloInput } from "@/components/ui";
+import { botao, Campo, estiloInput } from "@/components/ui";
 import { ROTULO_TIPO, TIPOS_ITEM, type TipoItem } from "@/lib/loja";
 import { createClient } from "@/lib/supabase/client";
 import { criarItemLoja } from "./actions";
@@ -89,7 +89,7 @@ export function NovoItemForm({
         <Campo rotulo="Nome *">
           <input name="nome" required className={estiloInput} />
         </Campo>
-        <Campo rotulo="🪙 Preço em Gold *">
+        <Campo rotulo="Preço em Gold *">
           <input name="preco_gold" type="number" min={1} required className={estiloInput} />
         </Campo>
         {tipo === "horas_gaming" ? (
@@ -98,11 +98,11 @@ export function NovoItemForm({
           </Campo>
         ) : (
           <Campo rotulo="Arquivo do item * (.fbx, .unitypackage, .zip...)">
-            <input name="arquivo" type="file" required className="text-sm text-slate-300" />
+            <input name="arquivo" type="file" required className="text-sm text-texto-medio" />
           </Campo>
         )}
         <Campo rotulo="Imagem da vitrine">
-          <input name="imagem" type="file" accept="image/*" className="text-sm text-slate-300" />
+          <input name="imagem" type="file" accept="image/*" className="text-sm text-texto-medio" />
         </Campo>
       </div>
       <Campo rotulo="Descrição">
@@ -112,12 +112,12 @@ export function NovoItemForm({
         <button
           type="submit"
           disabled={!!status.enviando}
-          className="rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400 disabled:opacity-60"
+          className={botao("primario")}
         >
           {status.enviando ?? "Criar item"}
         </button>
-        {status.erro && <span role="alert" className="text-sm text-red-300">{status.erro}</span>}
-        {status.ok && <span className="text-sm text-emerald-300">{status.ok}</span>}
+        {status.erro && <span role="alert" className="text-sm text-perigo">{status.erro}</span>}
+        {status.ok && <span className="text-sm text-sucesso">{status.ok}</span>}
       </div>
     </form>
   );

@@ -1,10 +1,18 @@
+import { BookOpenCheck, Briefcase, GraduationCap, ShieldCheck, type LucideIcon } from "lucide-react";
 import type { Papel } from "@/lib/supabase/config";
 
 export const ROTULO_PAPEL: Record<Papel, string> = {
-  admin: "👑 Admin",
-  diretor: "👔 Coordenador",
-  professor: "👨‍🏫 Professor",
-  aluno: "👨‍🎓 Aluno",
+  admin: "Admin",
+  diretor: "Coordenador",
+  professor: "Professor",
+  aluno: "Aluno",
+};
+
+export const ICONE_PAPEL: Record<Papel, LucideIcon> = {
+  admin: ShieldCheck,
+  diretor: Briefcase,
+  professor: BookOpenCheck,
+  aluno: GraduationCap,
 };
 
 export const DIAS_SEMANA = [

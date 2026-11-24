@@ -1,8 +1,9 @@
+import { ShoppingBag, Coins, Backpack, ScrollText, Download, Hourglass, CircleCheck, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { FormAcao } from "@/components/form-acao";
-import { Cartao } from "@/components/ui";
+import { botao, Cartao, Etiqueta, Icone, pilula, TituloPagina } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
-import { ROTULO_TIPO, TIPOS_ITEM, urlImagem, type TipoItem } from "@/lib/loja";
+import { ICONE_TIPO, ROTULO_TIPO, TIPOS_ITEM, urlImagem, type TipoItem } from "@/lib/loja";
 import { createClient } from "@/lib/supabase/server";
 import { comprar } from "./actions";
 
@@ -67,63 +68,64 @@ export default async function LojaAlunoPage({ searchParams }: PageProps<"/aluno/
   return (
     <div className="flex max-w-6xl flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">🛒 Loja</h1>
-          <p className="text-sm text-slate-400">Gaste seu Gold em novos itens</p>
-        </div>
-        <span className="rounded-full bg-amber-500/15 px-4 py-2 text-lg font-bold text-amber-300">
-          🪙 {perfil.gold_saldo}
+        <TituloPagina icone={ShoppingBag} descricao="Gaste seu Gold em novos itens">
+          Loja
+        </TituloPagina>
+        <span className="inline-flex items-center gap-2 rounded-full bg-aviso-suave px-4 py-2 text-lg font-bold text-aviso">
+          <Icone icone={Coins} /> {perfil.gold_saldo} Gold
         </span>
       </div>
 
       <div className="flex flex-wrap gap-2">
         <Link
           href="/aluno/loja"
-          className={`rounded-full px-3 py-1 text-sm ${!filtro ? "bg-cyan-500 text-slate-950" : "bg-slate-800 text-slate-300"}`}
+          className={pilula(!filtro)}
+          aria-current={!filtro ? "page" : undefined}
         >
-          Todos
+          <Icone icone={LayoutGrid} tamanho={16} /> Todos
         </Link>
         {TIPOS_ITEM.map((t) => (
           <Link
             key={t}
             href={`/aluno/loja?tipo=${t}`}
-            className={`rounded-full px-3 py-1 text-sm ${filtro === t ? "bg-cyan-500 text-slate-950" : "bg-slate-800 text-slate-300"}`}
+            className={pilula(filtro === t)}
+            aria-current={filtro === t ? "page" : undefined}
           >
-            {ROTULO_TIPO[t]}
+            <Icone icone={ICONE_TIPO[t]} tamanho={16} /> {ROTULO_TIPO[t]}
           </Link>
         ))}
       </div>
 
       <Cartao>
-        {!itens?.length && <p className="text-slate-400">Nenhum item à venda no momento.</p>}
+        {!itens?.length && <p className="text-texto-suave">Nenhum item à venda no momento.</p>}
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {itens?.map((i) => {
             const img = urlImagem(i.imagem_path);
             const podeComprar = perfil.gold_saldo >= i.preco_gold;
             return (
-              <li key={i.id} className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+              <li key={i.id} className="flex flex-col gap-2 rounded-xl border border-borda bg-fundo p-4">
                 {img ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={img} alt="" className="h-36 w-full rounded-lg object-cover" />
                 ) : (
-                  <div className="flex h-36 items-center justify-center rounded-lg bg-slate-800 text-5xl">
-                    {ROTULO_TIPO[i.tipo as TipoItem].split(" ")[0]}
+                  <div className="flex h-36 items-center justify-center rounded-lg bg-primaria-suave text-primaria-texto">
+                    <Icone icone={ICONE_TIPO[i.tipo as TipoItem]} tamanho={56} />
                   </div>
                 )}
                 <p className="font-semibold">{i.nome}</p>
-                <p className="text-xs text-slate-400">
-                  {ROTULO_TIPO[i.tipo as TipoItem]}
+                <p className="inline-flex items-center gap-1 text-sm text-texto-suave">
+                  <Icone icone={ICONE_TIPO[i.tipo as TipoItem]} tamanho={14} /> {ROTULO_TIPO[i.tipo as TipoItem]}
                   {i.horas && ` · ${i.horas}h de jogo`}
                 </p>
-                {i.descricao && <p className="text-sm text-slate-300">{i.descricao}</p>}
+                {i.descricao && <p className="text-sm text-texto-medio">{i.descricao}</p>}
                 <div className="mt-auto flex items-center justify-between gap-2">
-                  <span className="font-bold text-amber-300">🪙 {i.preco_gold}</span>
+                  <span className="inline-flex items-center gap-1 font-bold text-aviso"><Icone icone={Coins} tamanho={16} /> {i.preco_gold} Gold</span>
                   {podeComprar ? (
                     <FormAcao acao={comprar} botao="Comprar">
                       <input type="hidden" name="item_id" value={i.id} />
                     </FormAcao>
                   ) : (
-                    <span className="text-xs text-slate-500">Faltam {i.preco_gold - perfil.gold_saldo} 🪙</span>
+                    <span className="text-sm text-texto-suave">Faltam {i.preco_gold - perfil.gold_saldo} Gold</span>
                   )}
                 </div>
               </li>
@@ -133,37 +135,39 @@ export default async function LojaAlunoPage({ searchParams }: PageProps<"/aluno/
       </Cartao>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Cartao titulo="🎒 Meus itens">
-          {!minhas.length && <p className="text-sm text-slate-400">Você ainda não comprou nada.</p>}
+        <Cartao titulo="Meus itens" icone={Backpack}>
+          {!minhas.length && <p className="text-sm text-texto-suave">Você ainda não comprou nada.</p>}
           <ul className="flex flex-col gap-2 text-sm">
             {minhas.map((c) => (
               <li key={c.id} className="flex flex-wrap items-center justify-between gap-2">
-                <span>
-                  {c.item && ROTULO_TIPO[c.item.tipo].split(" ")[0]} {c.item?.nome}{" "}
-                  <span className="text-slate-500">· {dataHora(c.criado_em)}</span>
+                <span className="inline-flex items-center gap-1.5">
+                  {c.item && <Icone icone={ICONE_TIPO[c.item.tipo]} tamanho={16} className="text-texto-suave" />} {c.item?.nome}{" "}
+                  <span className="text-texto-suave">· {dataHora(c.criado_em)}</span>
                 </span>
                 {c.download ? (
-                  <a href={c.download} className="text-cyan-300 hover:underline">⬇️ Baixar</a>
+                  <a href={c.download} className={botao("secundario", "pequeno")}>
+                    <Icone icone={Download} tamanho={16} /> Baixar
+                  </a>
                 ) : c.status === "aguardando_aviso" ? (
-                  <span className="text-amber-300">⏳ Professor vai avisar a Gaming House</span>
+                  <Etiqueta tom="aviso" icone={Hourglass}>Professor vai avisar a Gaming House</Etiqueta>
                 ) : c.status === "avisado" ? (
-                  <span className="text-emerald-300">✅ Gaming House avisada</span>
+                  <Etiqueta tom="sucesso" icone={CircleCheck}>Gaming House avisada</Etiqueta>
                 ) : null}
               </li>
             ))}
           </ul>
         </Cartao>
 
-        <Cartao titulo="📜 Extrato de Gold">
-          {!extrato?.length && <p className="text-sm text-slate-400">Sem movimentações ainda.</p>}
+        <Cartao titulo="Extrato de Gold" icone={ScrollText}>
+          {!extrato?.length && <p className="text-sm text-texto-suave">Sem movimentações ainda.</p>}
           <ul className="flex flex-col gap-1 text-sm">
             {extrato?.map((t, i) => (
               <li key={i} className="flex justify-between gap-3">
-                <span className="text-slate-300">
+                <span className="text-texto-medio">
                   {dataHora(t.criado_em)} · {MOTIVO[t.motivo as keyof typeof MOTIVO]}
                   {t.descricao && ` — ${t.descricao}`}
                 </span>
-                <span className={t.valor > 0 ? "text-emerald-300" : "text-red-300"}>
+                <span className={`font-semibold ${t.valor > 0 ? "text-sucesso" : "text-perigo"}`}>
                   {t.valor > 0 ? "+" : ""}
                   {t.valor}
                 </span>

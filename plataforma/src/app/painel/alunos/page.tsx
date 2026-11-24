@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Campo, Cartao, estiloInput } from "@/components/ui";
+import { ArrowRight, Coins, Flag, Hourglass, UserRoundSearch } from "lucide-react";
+import { botao, Campo, Cartao, estiloInput, Etiqueta, Icone, TituloPagina } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import { corFalta, type LinhaFalta } from "@/lib/faltas";
 import { createClient } from "@/lib/supabase/server";
@@ -53,7 +54,8 @@ export default async function AlunosPage({ searchParams }: PageProps<"/painel/al
       concluidas: aprovadas.size,
       total,
       pendentes,
-      atual: atual ? `#${atual.numero_missao} ${atual.titulo}` : total ? "🏁 Tudo concluído" : "—",
+      atual: atual ? `#${atual.numero_missao} ${atual.titulo}` : total ? "Tudo concluído" : "—",
+      tudoConcluido: !atual && total > 0,
     };
   });
   // RF32/RF95: quem tem falta vem primeiro
@@ -61,12 +63,9 @@ export default async function AlunosPage({ searchParams }: PageProps<"/painel/al
 
   return (
     <div className="flex max-w-6xl flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold">🧑‍🎓 Alunos</h1>
-        <p className="text-sm text-slate-400">
-          Acompanhe o progresso. 🟡 1 falta · 🔴 2+ faltas seguidas (ficam no topo).
-        </p>
-      </div>
+      <TituloPagina icone={UserRoundSearch} descricao="Acompanhe o progresso. Quem tem faltas seguidas aparece no topo.">
+        Alunos
+      </TituloPagina>
 
       <Cartao>
         <form className="mb-4 flex items-end gap-2">
@@ -78,53 +77,60 @@ export default async function AlunosPage({ searchParams }: PageProps<"/painel/al
               ))}
             </select>
           </Campo>
-          <button className="rounded-lg bg-slate-700 px-3 py-2 text-sm hover:bg-slate-600">Filtrar</button>
+          <button className={botao("secundario")}>Filtrar</button>
         </form>
 
-        {!linhas.length && <p className="text-slate-400">Nenhum aluno encontrado.</p>}
+        {!linhas.length && <p className="text-texto-suave">Nenhum aluno encontrado.</p>}
         {!!linhas.length && (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-slate-400">
-                <tr className="border-b border-slate-800">
-                  <th className="py-2 pr-3">Aluno</th>
-                  <th className="pr-3">Turma</th>
-                  <th className="pr-3">Aula atual</th>
-                  <th className="pr-3">Progresso</th>
-                  <th className="pr-3">Aguardando</th>
-                  <th className="pr-3">Faltas</th>
-                  <th className="pr-3">🪙</th>
-                  <th />
+              <thead className="text-texto-suave">
+                <tr className="border-b border-borda">
+                  <th scope="col" className="py-2 pr-3">Aluno</th>
+                  <th scope="col" className="pr-3">Turma</th>
+                  <th scope="col" className="pr-3">Aula atual</th>
+                  <th scope="col" className="pr-3">Progresso</th>
+                  <th scope="col" className="pr-3">Aguardando</th>
+                  <th scope="col" className="pr-3">Faltas</th>
+                  <th scope="col" className="pr-3">
+                    <span className="inline-flex items-center gap-1"><Icone icone={Coins} tamanho={16} /> Gold</span>
+                  </th>
+                  <th scope="col"><span className="sr-only">Ações</span></th>
                 </tr>
               </thead>
               <tbody>
                 {linhas.map((l) => {
                   const cor = corFalta(l.faltas);
                   return (
-                    <tr key={l.id} className={`border-b border-slate-800/60 ${cor.fundo}`}>
+                    <tr key={l.id} className={`border-b border-borda ${cor.fundo}`}>
                       <td className="py-2 pr-3 font-medium">
-                        {l.nome} {!l.ativo && <span className="text-xs text-slate-500">(inativo)</span>}
+                        {l.nome} {!l.ativo && <span className="text-xs text-texto-suave">(inativo)</span>}
                       </td>
-                      <td className="pr-3 text-slate-300">{l.turma}</td>
-                      <td className="pr-3 text-slate-300">{l.atual}</td>
+                      <td className="pr-3 text-texto-medio">{l.turma}</td>
+                      <td className="pr-3 text-texto-medio">
+                        {l.tudoConcluido ? <Etiqueta tom="sucesso" icone={Flag}>Tudo concluído</Etiqueta> : l.atual}
+                      </td>
                       <td className="pr-3">
                         <div className="flex items-center gap-2">
-                          <div className="h-2 w-24 overflow-hidden rounded bg-slate-800">
-                            <div className="h-full bg-cyan-400" style={{ width: `${l.progresso}%` }} />
+                          <div className="h-2 w-24 overflow-hidden rounded bg-elevado">
+                            <div className="h-full bg-primaria" style={{ width: `${l.progresso}%` }} />
                           </div>
-                          <span className="text-slate-400">
+                          <span className="text-texto-suave">
                             {l.concluidas}/{l.total}
                           </span>
                         </div>
                       </td>
-                      <td className="pr-3">{l.pendentes ? `⏳ ${l.pendentes}` : "—"}</td>
-                      <td className={`pr-3 ${cor.texto}`}>
-                        {cor.selo} {l.faltas}
+                      <td className="pr-3">
+                        {l.pendentes ? <Etiqueta tom="primaria" icone={Hourglass}>{l.pendentes}</Etiqueta> : "—"}
+                      </td>
+                      <td className="pr-3">
+                        <Etiqueta tom={cor.tom} icone={cor.icone}>{l.faltas}</Etiqueta>
                       </td>
                       <td className="pr-3">{l.gold_saldo}</td>
                       <td>
-                        <Link href={`/painel/alunos/${l.id}`} className="text-cyan-300 hover:underline">
-                          Abrir →
+                        <Link href={`/painel/alunos/${l.id}`} className={botao("fantasma", "pequeno")}>
+                          Abrir <Icone icone={ArrowRight} tamanho={16} />
+                          <span className="sr-only">{l.nome}</span>
                         </Link>
                       </td>
                     </tr>

@@ -1,5 +1,6 @@
+import { ChartColumn, Coins, BookOpen, CircleCheck, TrendingUp, Hourglass, Target, ArrowRight, Flag, CalendarCheck, CalendarDays } from "lucide-react";
 import Link from "next/link";
-import { Cartao } from "@/components/ui";
+import { Aviso, Cartao, Icone, Indicador, pilula, TituloPagina } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -63,63 +64,67 @@ export default async function EstatisticasPage({ searchParams }: PageProps<"/alu
   for (let d = primeiro; d <= hoje; d = somarDias(d, 1)) celulas.push(d);
 
   const cards = [
-    { rotulo: "TOTAL DE AULAS", valor: total },
-    { rotulo: "CONCLUÍDAS", valor: concluidas },
-    { rotulo: "PROGRESSO", valor: `${progresso}%` },
-    { rotulo: "AGUARDANDO AVALIAÇÃO", valor: aguardando },
+    { rotulo: "Total de aulas", valor: total, icone: BookOpen, tom: "primaria" as const },
+    { rotulo: "Concluídas", valor: concluidas, icone: CircleCheck, tom: "sucesso" as const },
+    { rotulo: "Progresso", valor: `${progresso}%`, icone: TrendingUp, tom: "info" as const },
+    { rotulo: "Aguardando avaliação", valor: aguardando, icone: Hourglass, tom: "aviso" as const },
   ];
 
   return (
     <div className="flex max-w-5xl flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">👨‍🎓 Minhas Estatísticas</h1>
-          <p className="text-sm text-slate-400">Acompanhe seu progresso e presenças</p>
-        </div>
-        <span className="rounded-full bg-amber-500/15 px-4 py-2 font-bold text-amber-300">🪙 {perfil.gold_saldo}</span>
+        <TituloPagina icone={ChartColumn} descricao="Acompanhe seu progresso e presenças">
+          Minhas Estatísticas
+        </TituloPagina>
+        <span className="inline-flex items-center gap-2 rounded-full bg-aviso-suave px-4 py-2 font-bold text-aviso">
+          <Icone icone={Coins} /> {perfil.gold_saldo} Gold
+        </span>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-4">
         {cards.map((c) => (
-          <div key={c.rotulo} className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
-            <p className="text-xs tracking-wide text-slate-400">{c.rotulo}</p>
-            <p className="text-3xl font-bold">{c.valor}</p>
-          </div>
+          <Indicador key={c.rotulo} valor={c.valor} rotulo={c.rotulo} icone={c.icone} tom={c.tom} />
         ))}
       </div>
 
-      <Cartao titulo="🎯 Missão atual">
+      <Cartao titulo="Missão atual" icone={Target}>
         {atual ? (
           <p>
-            <span className="text-slate-400">Missão #{atual.numero_missao}</span> — <strong>{atual.titulo}</strong>{" "}
-            <Link href="/aluno" className="text-sm text-cyan-300 hover:underline">Ir para o mapa →</Link>
+            <span className="text-texto-suave">Missão #{atual.numero_missao}</span> — <strong>{atual.titulo}</strong>{" "}
+            <Link href="/aluno" className="inline-flex items-center gap-1 text-sm font-medium text-primaria-texto hover:underline">
+              Ir para o mapa <Icone icone={ArrowRight} tamanho={16} />
+            </Link>
           </p>
         ) : (
-          <p className="text-slate-400">{total ? "🏁 Você concluiu todas as aulas!" : "Nenhum curso liberado ainda."}</p>
+          total ? (
+            <Aviso tom="sucesso" icone={Flag}>Você concluiu todas as aulas!</Aviso>
+          ) : (
+            <p className="text-texto-suave">Nenhum curso liberado ainda.</p>
+          )
         )}
       </Cartao>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
-        <Cartao titulo="📍 Resumo de presenças">
+        <Cartao titulo="Resumo de presenças" icone={CalendarCheck}>
           <dl className="grid grid-cols-2 gap-y-2 text-sm">
-            <dt className="text-slate-400">Total de presenças</dt>
+            <dt className="text-texto-suave">Total de presenças</dt>
             <dd className="font-semibold">{todas.length}</dd>
-            <dt className="text-slate-400">Primeira</dt>
+            <dt className="text-texto-suave">Primeira</dt>
             <dd>{todas[0] ? br(todas[0].data) : "—"}</dd>
-            <dt className="text-slate-400">Última</dt>
+            <dt className="text-texto-suave">Última</dt>
             <dd>{todas.length ? br(todas[todas.length - 1].data) : "—"}</dd>
-            <dt className="text-slate-400">Faltas seguidas</dt>
+            <dt className="text-texto-suave">Faltas seguidas</dt>
             <dd>{(faltas as number | null) ?? 0}</dd>
           </dl>
         </Cartao>
 
-        <Cartao titulo="📅 Calendário de presenças">
+        <Cartao titulo="Calendário de presenças" icone={CalendarDays}>
           <div className="mb-3 flex gap-2 text-sm">
             {[7, 30, 90].map((p) => (
               <Link
                 key={p}
                 href={`/aluno/estatisticas?periodo=${p}`}
-                className={`rounded-full px-3 py-1 ${p === dias ? "bg-cyan-500 text-slate-950" : "bg-slate-800 text-slate-300"}`}
+                className={pilula(p === dias)}
               >
                 Últimos {p} dias
               </Link>
@@ -127,7 +132,7 @@ export default async function EstatisticasPage({ searchParams }: PageProps<"/alu
           </div>
           <div className="grid grid-cols-7 gap-1 text-center text-xs">
             {DIAS.map((d) => (
-              <span key={d} className="text-slate-500">{d}</span>
+              <span key={d} className="text-texto-suave">{d}</span>
             ))}
             {celulas.map((d) => {
               const noPeriodo = d >= inicio;
@@ -138,10 +143,10 @@ export default async function EstatisticasPage({ searchParams }: PageProps<"/alu
                   title={br(d)}
                   className={`rounded py-1.5 ${
                     !noPeriodo
-                      ? "text-slate-700"
+                      ? "text-borda-forte"
                       : presente
-                        ? "bg-emerald-500/30 font-semibold text-emerald-200"
-                        : "bg-slate-800/60 text-slate-500"
+                        ? "bg-sucesso-suave font-semibold text-sucesso"
+                        : "bg-elevado text-texto-suave"
                   }`}
                 >
                   {Number(d.slice(8))}
@@ -149,10 +154,13 @@ export default async function EstatisticasPage({ searchParams }: PageProps<"/alu
               );
             })}
           </div>
-          <p className="mt-2 text-xs text-slate-500">🟩 Presente (fez login) · ⬛ Sem login</p>
+          <p className="mt-3 flex flex-wrap gap-4 text-xs text-texto-suave">
+            <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-sucesso-suave ring-1 ring-sucesso" /> Presente (fez login)</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-elevado ring-1 ring-borda-forte" /> Sem login</span>
+          </p>
 
           <h3 className="mb-1 mt-4 text-sm font-semibold">Últimas presenças no período</h3>
-          <ul className="text-sm text-slate-300">
+          <ul className="text-sm text-texto-medio">
             {(presencasPeriodo ?? []).slice(0, 10).map((p) => (
               <li key={p.data}>
                 {br(p.data)} (
@@ -164,7 +172,7 @@ export default async function EstatisticasPage({ searchParams }: PageProps<"/alu
                 )
               </li>
             ))}
-            {!presencasPeriodo?.length && <li className="text-slate-500">Nenhuma no período.</li>}
+            {!presencasPeriodo?.length && <li className="text-texto-suave">Nenhuma no período.</li>}
           </ul>
         </Cartao>
       </div>

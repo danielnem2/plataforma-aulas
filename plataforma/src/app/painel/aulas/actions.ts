@@ -16,11 +16,8 @@ function lerAula(formData: FormData) {
     dados: {
       curso_id: String(formData.get("curso_id") ?? ""),
       titulo: String(formData.get("titulo") ?? "").trim(),
-      numero_missao: Number(formData.get("numero_missao") ?? 1) || 1,
       descricao: String(formData.get("descricao") ?? "").trim() || null,
       figma_embed_url: figma ?? "",
-      camada: Number(formData.get("camada") ?? 0) || 0,
-      ordem: Number(formData.get("ordem") ?? 0) || 0,
       dificuldade: String(formData.get("dificuldade") ?? "facil"),
       tempo_estimado_min: tempo > 0 ? tempo : null,
       gold_recompensa: Math.max(0, Number(formData.get("gold_recompensa") ?? 0) || 0),
@@ -97,7 +94,19 @@ export async function criarAula(_: EstadoAcao, formData: FormData): Promise<Esta
     .single();
   if (error || !data) return { erro: "Não foi possível criar a aula." };
 
-  const erroDeps = await salvarDependencias(data.id, l.dados.curso_id, l.dependencias);
+  // Onde encaixar: "depois:<id>" (no meio ou no fim da cadeia), "inicio" ou "manual"
+  const posicao = String(formData.get("posicao") ?? "manual");
+  let erroDeps: string | null = null;
+  if (posicao.startsWith("depois:")) {
+    const { error: erroEncaixe } = await supabase.rpc("inserir_aula_depois", {
+      p_nova: data.id,
+      p_anterior: posicao.slice("depois:".length),
+    });
+    if (erroEncaixe) erroDeps = "não foi possível encaixar na cadeia.";
+  } else if (posicao === "manual") {
+    erroDeps = await salvarDependencias(data.id, l.dados.curso_id, l.dependencias);
+  }
+  await supabase.rpc("reorganizar_curso_equipe", { p_curso: l.dados.curso_id });
   refresh();
   if (erroDeps) return { erro: `Aula criada, mas: ${erroDeps}` };
   return { ok: `Aula "${l.dados.titulo}" criada.` };
@@ -118,7 +127,29 @@ export async function editarAula(_: EstadoAcao, formData: FormData): Promise<Est
   if (error) return { erro: "Não foi possível salvar a aula." };
 
   const erroDeps = await salvarDependencias(id, l.dados.curso_id, l.dependencias);
+  await supabase.rpc("reorganizar_curso_equipe", { p_curso: l.dados.curso_id });
   refresh();
   if (erroDeps) return { erro: erroDeps };
   return { ok: "Salvo." };
+}
+
+/**
+ * Remove a aula da cadeia: quem dependia dela passa a depender dos pré-requisitos dela.
+ * Sem entregas de alunos: exclui de vez. Com entregas: arquiva (some do mapa, histórico fica).
+ */
+export async function removerAula(_: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
+  if (!(await perfilComPapel(["admin", "diretor"]))) return { erro: "Só admin e coordenação removem aulas." };
+  if (formData.get("confirmar") !== "on") return { erro: "Marque a confirmação para remover." };
+  const id = String(formData.get("id") ?? "");
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("remover_aula", { p_aula: id });
+  if (error) return { erro: "Não foi possível remover a aula." };
+  refresh();
+  return {
+    ok:
+      data === "arquivada"
+        ? "Aula tirada da cadeia e arquivada (tinha entregas de alunos, o histórico foi mantido)."
+        : "Aula removida e cadeia reajustada.",
+  };
 }

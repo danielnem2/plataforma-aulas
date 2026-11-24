@@ -1,5 +1,6 @@
+import { School, Plus } from "lucide-react";
 import { FormAcao } from "@/components/form-acao";
-import { Campo, Cartao, Expansivel, Selo, estiloInput } from "@/components/ui";
+import { Campo, Cartao, estiloInput, Expansivel, Selo, TituloPagina } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { criarEscola, editarEscola } from "./actions";
@@ -27,9 +28,9 @@ export default async function EscolasPage() {
 
   return (
     <div className="flex max-w-5xl flex-col gap-6">
-      <h1 className="text-2xl font-bold">🏫 Escolas</h1>
+      <TituloPagina icone={School}>Escolas</TituloPagina>
 
-      <Cartao titulo="Nova escola">
+      <Cartao titulo="Nova escola" icone={Plus}>
         <FormAcao acao={criarEscola} botao="Criar escola" limparAoSalvar>
           <div className="grid gap-3 sm:grid-cols-3">
             <Campo rotulo="Nome *">
@@ -45,9 +46,9 @@ export default async function EscolasPage() {
         </FormAcao>
       </Cartao>
 
-      <Cartao titulo={`${escolas?.length ?? 0} escola(s)`}>
-        {!escolas?.length && <p className="text-slate-400">Nenhuma escola cadastrada ainda.</p>}
-        <ul className="flex flex-col divide-y divide-slate-800">
+      <Cartao titulo={`${escolas?.length ?? 0} escola(s)`} icone={School}>
+        {!escolas?.length && <p className="text-texto-suave">Nenhuma escola cadastrada ainda.</p>}
+        <ul className="flex flex-col divide-y divide-borda">
           {escolas?.map((e) => {
             const c = contar(e.id);
             return (
@@ -55,7 +56,7 @@ export default async function EscolasPage() {
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="font-medium">{e.nome}</span>
                   <Selo ativo={e.ativa} />
-                  <span className="text-sm text-slate-400">
+                  <span className="text-sm text-texto-suave">
                     {c.turmas} turma(s) · {c.alunos} aluno(s) · Coordenação:{" "}
                     {c.coordenadores.length ? c.coordenadores.join(", ") : "—"}
                   </span>
@@ -74,7 +75,7 @@ export default async function EscolasPage() {
                         <input name="telefone" defaultValue={e.telefone ?? ""} className={estiloInput} />
                       </Campo>
                     </div>
-                    <label className="flex items-center gap-2 text-sm text-slate-300">
+                    <label className="flex items-center gap-2 text-sm text-texto-medio">
                       <input type="checkbox" name="ativa" defaultChecked={e.ativa} /> Escola ativa
                     </label>
                   </FormAcao>
@@ -83,7 +84,7 @@ export default async function EscolasPage() {
             );
           })}
         </ul>
-        <p className="mt-4 text-xs text-slate-500">
+        <p className="mt-4 text-xs text-texto-suave">
           Para ligar um coordenador a uma escola, use a tela Usuários.
         </p>
       </Cartao>

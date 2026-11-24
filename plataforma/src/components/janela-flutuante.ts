@@ -30,7 +30,7 @@ export async function abrirJanelaFlutuante(url: string, titulo: string) {
   const pip = await window.documentPictureInPicture.requestWindow({ width: 640, height: 400 });
   pip.document.title = titulo;
   const estilo = pip.document.createElement("style");
-  estilo.textContent = "html,body{margin:0;height:100%;background:#0f172a}iframe{border:0;width:100%;height:100%}";
+  estilo.textContent = "html,body{margin:0;height:100%;background:#273041}iframe{border:0;width:100%;height:100%}";
   pip.document.head.append(estilo);
 
   const iframe = pip.document.createElement("iframe");

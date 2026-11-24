@@ -35,7 +35,15 @@ Se algo der erro, me diga a tela e o que fez — eu olho o log do servidor.
 - **Status do aluno** (no trilho / atrasado) usa as **faltas** + "aguardando avaliação". Não criei regra de atraso por tempo sem entregar tarefa — se quiser (ex.: 2 semanas sem enviar nada), me diga o prazo.
 - **Links aceitos no envio de tarefa**: Google Drive/Docs, Dropbox, GitHub e OneDrive.
 - **Senha mínima**: 8 caracteres.
-- Ninguém é excluído: usuários, turmas, aulas e itens da loja são **desativados** (o histórico fica).
+- Ninguém é excluído: usuários, turmas e itens da loja são **desativados** (o histórico fica).
+- **Aulas** (migração `0004_cadeia_aulas.sql`, já rodada):
+  - Coluna no mapa, posição na coluna e nº da missão são **calculados sozinhos** pelos pré-requisitos.
+  - "Remover aula" (só admin e coordenação): quem dependia dela passa a depender dos pré-requisitos dela. Sem entregas de alunos → excluída de vez; com entregas → arquivada (some do mapa, histórico fica).
+  - "Nova aula → Depois de X" encaixa no meio: o que vinha depois de X passa a vir depois da nova.
+- **Revisões de aulas** (migração `0005_revisoes_aula.sql`, já rodada):
+  - Professor e coordenador enviam ao ADM uma dúvida sobre uma missão (dele ou de um aluno) em Aulas → "Enviar dúvida ao ADM".
+  - Só o ADM vê todas e responde; quem enviou vê as suas com a resposta em "Revisões de aulas".
+  - Contador no menu só para o ADM (dúvidas abertas). Não há aviso por e-mail.
 - **Contratos** (migração `0003_contratos.sql`, já rodada):
   - Contrato de N meses começa 00:00 da data de início; o último dia de acesso é a véspera da mesma data N meses depois (24/11 + 6 meses → acesso até 23/05).
   - Aula experimental: 24h a partir da data/hora escolhida (padrão: agora).

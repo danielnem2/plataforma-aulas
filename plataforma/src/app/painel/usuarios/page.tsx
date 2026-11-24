@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { CamposContrato } from "@/components/campos-contrato";
 import { FormAcao } from "@/components/form-acao";
-import { Campo, Cartao, Expansivel, Selo, estiloInput } from "@/components/ui";
+import { FlaskConical, UserPlus, Users } from "lucide-react";
+import { botao, Campo, Cartao, Expansivel, Icone, Selo, estiloInput, TituloPagina, TOM_TEXTO } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import {
   agoraLocalInput,
@@ -10,7 +11,7 @@ import {
   statusContrato,
   type DadosContrato,
 } from "@/lib/contrato";
-import { ROTULO_PAPEL } from "@/lib/rotulos";
+import { ICONE_PAPEL, ROTULO_PAPEL } from "@/lib/rotulos";
 import type { Papel } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { criarUsuario, editarUsuario, redefinirSenha } from "./actions";
@@ -100,9 +101,9 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/painel/
 
   return (
     <div className="flex max-w-6xl flex-col gap-6">
-      <h1 className="text-2xl font-bold">👥 Usuários</h1>
+      <TituloPagina icone={Users}>Usuários</TituloPagina>
 
-      <Cartao titulo="Novo usuário">
+      <Cartao titulo="Novo usuário" icone={UserPlus}>
         <FormAcao acao={criarUsuario} botao="Cadastrar" limparAoSalvar>
           <div className="grid gap-3 sm:grid-cols-3">
             <Campo rotulo="Papel *">
@@ -133,7 +134,7 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/painel/
         </FormAcao>
       </Cartao>
 
-      <Cartao titulo="Usuários cadastrados">
+      <Cartao titulo="Usuários cadastrados" icone={Users}>
         <form className="mb-4 grid gap-2 sm:grid-cols-5">
           <Campo rotulo="Buscar">
             <input name="busca" defaultValue={fBusca} placeholder="Nome ou e-mail" className={estiloInput} />
@@ -167,29 +168,31 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/painel/
             </select>
           </Campo>
           <div className="flex items-end gap-2">
-            <button className="rounded-lg bg-slate-700 px-3 py-2 text-sm hover:bg-slate-600">Filtrar</button>
-            <a href="/painel/usuarios" className="px-2 py-2 text-sm text-slate-400 hover:text-white">Limpar</a>
+            <button className={botao("secundario")}>Filtrar</button>
+            <a href="/painel/usuarios" className={botao("fantasma")}>Limpar</a>
           </div>
         </form>
 
-        <p className="mb-3 text-sm text-slate-400">
+        <p className="mb-3 text-sm text-texto-suave">
           {usuarios?.length ?? 0} usuário(s) ·{" "}
           {(["admin", "diretor", "professor", "aluno"] as Papel[])
             .map((p) => `${ROTULO_PAPEL[p]}: ${contagem(p)}`)
             .join(" · ")}
         </p>
 
-        <ul className="flex flex-col divide-y divide-slate-800">
+        <ul className="flex flex-col divide-y divide-borda">
           {(usuarios as Usuario[] | null)?.map((u) => {
             const podeEditar = ehAdmin || (u.papel === "professor" || u.papel === "aluno");
             return (
               <li key={u.id} className="flex flex-col gap-2 py-3">
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="font-medium">{u.nome}</span>
-                  <span className="text-sm text-slate-400">{u.email}</span>
-                  <span className="text-sm">{ROTULO_PAPEL[u.papel]}</span>
+                  <span className="text-sm text-texto-suave">{u.email}</span>
+                  <span className="inline-flex items-center gap-1 text-sm text-texto-medio">
+                    <Icone icone={ICONE_PAPEL[u.papel]} tamanho={16} /> {ROTULO_PAPEL[u.papel]}
+                  </span>
                   <Selo ativo={u.ativo} sim="Ativo" nao="Inativo" />
-                  <span className="text-sm text-slate-400">
+                  <span className="text-sm text-texto-suave">
                     {u.papel !== "admin" && nomeEscola(u.escola_id)}
                     {u.papel === "aluno" && ` · ${nomeTurma(u.turma_id)}`}
                   </span>
@@ -197,8 +200,10 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/painel/
                     const st = statusContrato(u);
                     const cor = COR_SITUACAO[st.situacao];
                     return (
-                      <Link href={`/painel/alunos/${u.id}#contrato`} className={`text-sm hover:underline ${cor.texto}`}>
-                        {cor.selo} {u.tipo_acesso === "experimental" ? "🧪 " : ""}{st.texto}
+                      <Link href={`/painel/alunos/${u.id}#contrato`} className={`inline-flex items-center gap-1 text-sm font-medium hover:underline ${TOM_TEXTO[cor.tom]}`}>
+                        <Icone icone={cor.icone} tamanho={16} />
+                        {u.tipo_acesso === "experimental" && <Icone icone={FlaskConical} tamanho={16} />}
+                        {st.texto}
                       </Link>
                     );
                   })()}
@@ -222,9 +227,9 @@ export default async function UsuariosPage({ searchParams }: PageProps<"/painel/
                           {selectEscola(u.escola_id)}
                           {selectTurma(u.turma_id)}
                         </div>
-                        <label className="flex items-center gap-2 text-sm text-slate-300">
+                        <label className="flex min-h-10 items-center gap-2 text-sm text-texto-medio">
                           <input type="checkbox" name="ativo" defaultChecked={u.ativo} /> Usuário ativo
-                          <span className="text-slate-500">(desativado não consegue entrar)</span>
+                          <span className="text-texto-suave">(desativado não consegue entrar)</span>
                         </label>
                       </FormAcao>
                     </Expansivel>

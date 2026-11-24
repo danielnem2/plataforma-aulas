@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FormAcao } from "@/components/form-acao";
-import { Campo, Cartao, estiloInput } from "@/components/ui";
+import { CircleAlert, CircleCheck, PartyPopper, TriangleAlert } from "lucide-react";
+import { Aviso, botao, Campo, Cartao, estiloInput, Etiqueta, TituloPagina } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import { corFalta, type LinhaFalta } from "@/lib/faltas";
 import { createClient } from "@/lib/supabase/server";
@@ -29,18 +30,22 @@ export default async function FaltasPage({ searchParams }: PageProps<"/painel/fa
 
   return (
     <div className="flex max-w-5xl flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold">🚨 Faltas</h1>
-        <p className="text-sm text-slate-400">
-          Uma falta = uma semana de aula da turma sem login. 🟡 1 falta · 🔴 2 ou mais seguidas.
-          {perfil.papel === "professor" ? " Você vê os alunos das suas turmas." : " Você vê todos os alunos da escola."}
-        </p>
-      </div>
+      <TituloPagina
+        icone={TriangleAlert}
+        descricao={
+          <>
+            Uma falta = uma semana de aula da turma sem login. Amarelo: 1 falta · Vermelho: 2 ou mais seguidas.
+            {perfil.papel === "professor" ? " Você vê os alunos das suas turmas." : " Você vê todos os alunos da escola."}
+          </>
+        }
+      >
+        Faltas
+      </TituloPagina>
 
       {vermelhos > 0 && (
-        <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-red-200">
-          ⚠️ {vermelhos} aluno(s) com 2 ou mais faltas seguidas aguardando contato.
-        </div>
+        <Aviso tom="perigo" icone={CircleAlert}>
+          {vermelhos} aluno(s) com 2 ou mais faltas seguidas aguardando contato.
+        </Aviso>
       )}
 
       <Cartao>
@@ -53,27 +58,29 @@ export default async function FaltasPage({ searchParams }: PageProps<"/painel/fa
               ))}
             </select>
           </Campo>
-          <label className="flex items-center gap-2 pb-2 text-sm text-slate-300">
+          <label className="flex min-h-10 items-center gap-2 text-sm text-texto-medio">
             <input type="checkbox" name="todos" value="1" defaultChecked={mostrarTodos} /> Mostrar também quem não tem falta
           </label>
-          <button className="rounded-lg bg-slate-700 px-3 py-2 text-sm hover:bg-slate-600">Filtrar</button>
+          <button className={botao("secundario")}>Filtrar</button>
         </form>
 
-        {!linhas.length && <p className="text-slate-400">Nenhum aluno com falta. 🎉</p>}
+        {!linhas.length && (
+          <Aviso tom="sucesso" icone={PartyPopper}>Nenhum aluno com falta.</Aviso>
+        )}
         <ul className="flex flex-col gap-2">
           {linhas.map((l) => {
             const cor = corFalta(l.faltas);
             return (
-              <li key={l.aluno_id} className={`flex flex-col gap-2 rounded-xl p-3 ${cor.fundo || "bg-slate-900/40"}`}>
+              <li key={l.aluno_id} className={`flex flex-col gap-2 rounded-xl border border-borda p-3 ${cor.fundo || "bg-superficie"}`}>
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className={`font-semibold ${cor.texto}`}>
-                    {cor.selo} {l.faltas} falta(s)
-                  </span>
+                  <Etiqueta tom={cor.tom} icone={cor.icone}>
+                    {l.faltas} falta(s)
+                  </Etiqueta>
                   <Link href={`/painel/alunos/${l.aluno_id}`} className="font-medium hover:underline">
                     {l.nome}
                   </Link>
-                  <span className="text-sm text-slate-400">{l.turma_nome}</span>
-                  {l.aviso_visto && <span className="text-sm text-emerald-300">✓ contatado</span>}
+                  <span className="text-sm text-texto-suave">{l.turma_nome}</span>
+                  {l.aviso_visto && <Etiqueta tom="sucesso" icone={CircleCheck}>contatado</Etiqueta>}
                 </div>
                 {l.faltas >= 1 && !l.aviso_visto && (
                   <FormAcao acao={marcarFaltaVista} botao="Marcar como contatado" className="max-w-xl">

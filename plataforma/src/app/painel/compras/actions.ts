@@ -13,5 +13,5 @@ export async function marcarAvisado(_: EstadoAcao, formData: FormData): Promise<
   const { error } = await supabase.rpc("marcar_compra_avisada", { p_compra: id });
   if (error) return { erro: "Não foi possível marcar." };
   refresh();
-  return { ok: "Avisado ✅" };
+  return { ok: "Avisado." };
 }

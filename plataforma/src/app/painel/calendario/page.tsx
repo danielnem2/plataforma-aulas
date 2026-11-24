@@ -1,5 +1,6 @@
+import { CalendarOff, Plus, List } from "lucide-react";
 import { FormAcao } from "@/components/form-acao";
-import { Campo, Cartao, estiloInput } from "@/components/ui";
+import { Campo, Cartao, estiloInput, TituloPagina } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import { DIAS_SEMANA } from "@/lib/rotulos";
 import { createClient } from "@/lib/supabase/server";
@@ -36,13 +37,13 @@ export default async function CalendarioPage() {
   return (
     <div className="flex max-w-4xl flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold">📅 Dias sem aula</h1>
-        <p className="text-sm text-slate-400">
+        <TituloPagina icone={CalendarOff}>Dias sem aula</TituloPagina>
+        <p className="text-sm text-texto-suave">
           Feriados e recessos cadastrados aqui não contam como falta.
         </p>
       </div>
 
-      <Cartao titulo="Cadastrar dia sem aula">
+      <Cartao titulo="Cadastrar dia sem aula" icone={Plus}>
         <FormAcao acao={criarDiaSemAula} botao="Cadastrar" limparAoSalvar>
           <div className="grid gap-3 sm:grid-cols-3">
             <Campo rotulo="Data *">
@@ -73,14 +74,14 @@ export default async function CalendarioPage() {
             )}
           </div>
         </FormAcao>
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-texto-suave">
           Use a data do dia em que a turma teria aula.
         </p>
       </Cartao>
 
-      <Cartao titulo="Cadastrados">
-        {!dias?.length && <p className="text-slate-400">Nenhum dia cadastrado.</p>}
-        <ul className="flex flex-col divide-y divide-slate-800 text-sm">
+      <Cartao titulo="Cadastrados" icone={List}>
+        {!dias?.length && <p className="text-texto-suave">Nenhum dia cadastrado.</p>}
+        <ul className="flex flex-col divide-y divide-borda text-sm">
           {dias?.map((d) => (
             <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 py-2">
               <span>

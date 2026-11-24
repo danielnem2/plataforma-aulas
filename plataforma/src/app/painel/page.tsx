@@ -1,5 +1,23 @@
 import Link from "next/link";
-import { Campo, Cartao, estiloInput } from "@/components/ui";
+import {
+  Activity,
+  ArrowRight,
+  ChartColumn,
+  CircleAlert,
+  CircleCheck,
+  ClipboardCheck,
+  Gamepad2,
+  Hourglass,
+  House,
+  Repeat,
+  Target,
+  Timer,
+  TrendingUp,
+  TriangleAlert,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+import { botao, Campo, Cartao, estiloInput, Etiqueta, Icone, TituloPagina, TOM_SUAVE, type Tom } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import type { LinhaFalta } from "@/lib/faltas";
 import { createClient } from "@/lib/supabase/server";
@@ -15,7 +33,7 @@ const pct = (a: number, b: number) => (b ? Math.round((a / b) * 1000) / 10 : 0);
 
 function Barra({ valor, max, cor }: { valor: number; max: number; cor: string }) {
   return (
-    <div className="h-24 w-full rounded bg-slate-800/40">
+    <div className="h-24 w-full rounded bg-elevado">
       <div className="flex h-full items-end">
         <div className={`w-full rounded ${cor}`} style={{ height: `${max ? (valor / max) * 100 : 0}%` }} title={String(valor)} />
       </div>
@@ -110,25 +128,42 @@ export default async function PainelPage({ searchParams }: PageProps<"/painel">)
   const novas = sub.filter((s) => s.status === "nova").length;
   const vermelhos = faltas.filter((f) => f.faltas >= 2 && !f.aviso_visto).length;
 
-  const cards = [
-    { icone: "👥", rotulo: "Alunos ativos (30 dias)", valor: ativos30.size, sub: variacao === null ? "sem dados do mês anterior" : `${variacao >= 0 ? "+" : ""}${variacao}% vs. mês anterior` },
-    { icone: "📊", rotulo: "Taxa de conclusão", valor: `${conclusao}%`, sub: `${aprovadas.length} de ${aulasTotal} aulas` },
-    { icone: "⏱️", rotulo: "Tempo médio por módulo", valor: tempoMedio, sub: "dias entre aprovações" },
-    { icone: "🔥", rotulo: "Engajamento semanal", valor: `${pct(ativos7.size, alunos.size)}%`, sub: "logaram nos últimos 7 dias" },
-    { icone: "❤️", rotulo: "Taxa de retenção", valor: `${retencao}%`, sub: "ativos no mês anterior que voltaram" },
+  const cards: { icone: LucideIcon; rotulo: string; valor: React.ReactNode; sub: string }[] = [
+    { icone: Users, rotulo: "Alunos ativos (30 dias)", valor: ativos30.size, sub: variacao === null ? "sem dados do mês anterior" : `${variacao >= 0 ? "+" : ""}${variacao}% vs. mês anterior` },
+    { icone: ChartColumn, rotulo: "Taxa de conclusão", valor: `${conclusao}%`, sub: `${aprovadas.length} de ${aulasTotal} aulas` },
+    { icone: Timer, rotulo: "Tempo médio por módulo", valor: tempoMedio, sub: "dias entre aprovações" },
+    { icone: Activity, rotulo: "Engajamento semanal", valor: `${pct(ativos7.size, alunos.size)}%`, sub: "logaram nos últimos 7 dias" },
+    { icone: Repeat, rotulo: "Taxa de retenção", valor: `${retencao}%`, sub: "ativos no mês anterior que voltaram" },
+  ];
+
+  const pendencias: { href: string; icone: LucideIcon; tom: Tom; texto: React.ReactNode; mostrar: boolean }[] = [
+    { href: "/painel/submissoes", icone: ClipboardCheck, tom: "primaria", texto: <><strong>{novas}</strong> tarefa(s) aguardando avaliação</>, mostrar: novas > 0 },
+    { href: "/painel/faltas", icone: CircleAlert, tom: "perigo", texto: <><strong>{vermelhos}</strong> aluno(s) com 2+ faltas seguidas</>, mostrar: vermelhos > 0 },
+    { href: "/painel/compras", icone: Gamepad2, tom: "especial", texto: <><strong>{comprasPend}</strong> compra(s) de horas para avisar</>, mostrar: (comprasPend ?? 0) > 0 },
+  ];
+
+  const legendaDist: { tom: Tom; icone: LucideIcon; rotulo: string; valor: number; barra: string }[] = [
+    { tom: "sucesso", icone: CircleCheck, rotulo: "No trilho", valor: dist.noTrilho, barra: "bg-sucesso" },
+    { tom: "primaria", icone: Hourglass, rotulo: "Aguardando avaliação", valor: dist.aguardando, barra: "bg-primaria" },
+    { tom: "aviso", icone: TriangleAlert, rotulo: "1 falta", valor: dist.umaFalta, barra: "bg-aviso" },
+    { tom: "perigo", icone: CircleAlert, rotulo: "2+ faltas", valor: dist.duasMais, barra: "bg-perigo" },
   ];
 
   return (
     <div className="flex max-w-6xl flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Olá, {perfil.nome} 👋</h1>
-          <p className="text-sm text-slate-400">
-            {perfil.papel === "professor" ? "Resumo das suas turmas" : perfil.papel === "diretor" ? "Resumo da sua escola" : "Resumo da plataforma"}
-            {" · "}
-            {alunos.size} aluno(s) ativo(s) cadastrado(s)
-          </p>
-        </div>
+        <TituloPagina
+          icone={House}
+          descricao={
+            <>
+              {perfil.papel === "professor" ? "Resumo das suas turmas" : perfil.papel === "diretor" ? "Resumo da sua escola" : "Resumo da plataforma"}
+              {" · "}
+              {alunos.size} aluno(s) ativo(s) cadastrado(s)
+            </>
+          }
+        >
+          Olá, {perfil.nome}
+        </TituloPagina>
         {perfil.papel === "admin" && (escolas?.length ?? 0) > 1 && (
           <form className="flex items-end gap-2">
             <Campo rotulo="Escola">
@@ -139,88 +174,88 @@ export default async function PainelPage({ searchParams }: PageProps<"/painel">)
                 ))}
               </select>
             </Campo>
-            <button className="rounded-lg bg-slate-700 px-3 py-2 text-sm hover:bg-slate-600">Ver</button>
+            <button className={botao("secundario")}>Ver</button>
           </form>
         )}
       </div>
 
-      {(novas > 0 || vermelhos > 0 || (comprasPend ?? 0) > 0) && (
+      {pendencias.some((p) => p.mostrar) && (
         <div className="grid gap-3 sm:grid-cols-3">
-          {novas > 0 && (
-            <Link href="/painel/submissoes" className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 p-4 hover:bg-cyan-500/20">
-              🎯 <strong>{novas}</strong> tarefa(s) aguardando avaliação →
-            </Link>
-          )}
-          {vermelhos > 0 && (
-            <Link href="/painel/faltas" className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 hover:bg-red-500/20">
-              🚨 <strong>{vermelhos}</strong> aluno(s) com 2+ faltas seguidas →
-            </Link>
-          )}
-          {(comprasPend ?? 0) > 0 && (
-            <Link href="/painel/compras" className="rounded-xl border border-violet-500/40 bg-violet-500/10 p-4 hover:bg-violet-500/20">
-              🎮 <strong>{comprasPend}</strong> compra(s) de horas para avisar →
-            </Link>
-          )}
+          {pendencias
+            .filter((p) => p.mostrar)
+            .map((p) => (
+              <Link key={p.href} href={p.href} className={`flex items-center gap-3 rounded-xl p-4 hover:shadow-md ${TOM_SUAVE[p.tom]}`}>
+                <Icone icone={p.icone} tamanho={22} />
+                <span className="flex-1">{p.texto}</span>
+                <Icone icone={ArrowRight} />
+              </Link>
+            ))}
         </div>
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((c) => (
-          <div key={c.rotulo} className="rounded-xl border border-slate-700 bg-slate-900/60 p-4">
-            <p className="text-sm text-slate-400">
-              {c.icone} {c.rotulo}
+          <div key={c.rotulo} className="rounded-2xl border border-borda bg-superficie p-4 shadow-sm">
+            <p className="flex items-center gap-2 text-sm text-texto-suave">
+              <Icone icone={c.icone} tamanho={16} className="text-primaria-texto" /> {c.rotulo}
             </p>
-            <p className="text-3xl font-bold">{c.valor}</p>
-            <p className="text-xs text-slate-500">{c.sub}</p>
+            <p className="mt-1 text-3xl font-bold text-texto">{c.valor}</p>
+            <p className="text-xs text-texto-suave">{c.sub}</p>
           </div>
         ))}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Cartao titulo="📊 Atividade semanal — enviadas × aprovadas">
+        <Cartao titulo="Atividade semanal — enviadas × aprovadas" icone={ChartColumn}>
           <div className="grid grid-cols-8 gap-2">
             {semanas.map((s) => (
               <div key={s.rotulo} className="flex flex-col items-center gap-1">
                 <div className="flex w-full gap-0.5">
-                  <Barra valor={s.enviadas} max={maxAtividade} cor="bg-cyan-400" />
-                  <Barra valor={s.aprovadas} max={maxAtividade} cor="bg-emerald-400" />
+                  <Barra valor={s.enviadas} max={maxAtividade} cor="bg-primaria" />
+                  <Barra valor={s.aprovadas} max={maxAtividade} cor="bg-sucesso" />
                 </div>
-                <span className="text-[10px] text-slate-500">{s.rotulo}</span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-xs text-texto-suave">{s.rotulo}</span>
+                <span className="text-xs text-texto-suave">
                   {s.enviadas}/{s.aprovadas}
                 </span>
               </div>
             ))}
           </div>
-          <p className="mt-2 text-xs text-slate-500">🟦 enviadas · 🟩 aprovadas (semana que começa na data)</p>
+          <p className="mt-3 flex flex-wrap gap-4 text-xs text-texto-suave">
+            <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-primaria" /> enviadas</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-sucesso" /> aprovadas</span>
+            <span>(semana que começa na data)</span>
+          </p>
         </Cartao>
 
-        <Cartao titulo="📈 Presença por semana — alunos que logaram">
+        <Cartao titulo="Presença por semana — alunos que logaram" icone={TrendingUp}>
           <div className="grid grid-cols-8 gap-2">
             {semanas.map((s) => (
               <div key={s.rotulo} className="flex flex-col items-center gap-1">
-                <Barra valor={s.presentes} max={Math.max(1, alunos.size)} cor="bg-violet-400" />
-                <span className="text-[10px] text-slate-500">{s.rotulo}</span>
-                <span className="text-[10px] text-slate-400">{pct(s.presentes, alunos.size)}%</span>
+                <Barra valor={s.presentes} max={Math.max(1, alunos.size)} cor="bg-especial" />
+                <span className="text-xs text-texto-suave">{s.rotulo}</span>
+                <span className="text-xs text-texto-suave">{pct(s.presentes, alunos.size)}%</span>
               </div>
             ))}
           </div>
         </Cartao>
       </div>
 
-      <Cartao titulo="🎯 Distribuição dos alunos">
-        <div className="flex h-6 w-full overflow-hidden rounded-full bg-slate-800">
-          <div className="bg-emerald-500" style={{ width: `${(dist.noTrilho / totalDist) * 100}%` }} />
-          <div className="bg-cyan-500" style={{ width: `${(dist.aguardando / totalDist) * 100}%` }} />
-          <div className="bg-amber-500" style={{ width: `${(dist.umaFalta / totalDist) * 100}%` }} />
-          <div className="bg-red-500" style={{ width: `${(dist.duasMais / totalDist) * 100}%` }} />
+      <Cartao titulo="Distribuição dos alunos" icone={Target}>
+        <div className="flex h-6 w-full gap-0.5 overflow-hidden rounded-full bg-elevado" aria-hidden="true">
+          {legendaDist.map((d) => (
+            <div key={d.rotulo} className={d.barra} style={{ width: `${(d.valor / totalDist) * 100}%` }} />
+          ))}
         </div>
-        <div className="mt-2 flex flex-wrap gap-4 text-sm text-slate-300">
-          <span>🟢 No trilho: {dist.noTrilho}</span>
-          <span>🔵 Aguardando avaliação: {dist.aguardando}</span>
-          <span>🟡 1 falta: {dist.umaFalta}</span>
-          <span>🔴 2+ faltas: {dist.duasMais}</span>
-        </div>
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {legendaDist.map((d) => (
+            <li key={d.rotulo}>
+              <Etiqueta tom={d.tom} icone={d.icone}>
+                {d.rotulo}: {d.valor}
+              </Etiqueta>
+            </li>
+          ))}
+        </ul>
       </Cartao>
     </div>
   );

@@ -66,7 +66,7 @@ export async function liberarAula(_: EstadoAcao, formData: FormData): Promise<Es
     .insert({ aluno_id: alunoId, aula_id: aulaId, liberado_por: perfil.id });
   if (error) return { erro: "Sem permissão." };
   refresh();
-  return { ok: "Aula liberada 🔓" };
+  return { ok: "Aula liberada." };
 }
 
 /** Bloqueia de novo o que foi liberado manualmente (RF46) — mantém histórico (RF48) */
@@ -85,7 +85,7 @@ export async function revogarAula(_: EstadoAcao, formData: FormData): Promise<Es
     .is("revogado_em", null);
   if (error) return { erro: "Sem permissão." };
   refresh();
-  return { ok: "Liberação removida 🔒" };
+  return { ok: "Liberação removida." };
 }
 
 /** Contrato do aluno: início, duração ou aula experimental — só coordenação/admin */

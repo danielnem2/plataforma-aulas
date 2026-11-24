@@ -1,3 +1,6 @@
+import { CircleAlert, CircleCheck, TriangleAlert, type LucideIcon } from "lucide-react";
+import type { Tom } from "@/components/ui";
+
 export type LinhaFalta = {
   aluno_id: string;
   nome: string;
@@ -7,9 +10,9 @@ export type LinhaFalta = {
   aviso_visto: boolean;
 };
 
-/** Cor por faltas seguidas: 1 = amarelo, 2+ = vermelho (RF95) */
-export function corFalta(faltas: number) {
-  if (faltas >= 2) return { fundo: "bg-red-500/15", texto: "text-red-300", selo: "🔴" };
-  if (faltas === 1) return { fundo: "bg-amber-500/15", texto: "text-amber-300", selo: "🟡" };
-  return { fundo: "", texto: "text-slate-400", selo: "🟢" };
+/** Status por faltas seguidas: 1 = amarelo, 2+ = vermelho (RF95) — sempre com ícone + texto */
+export function corFalta(faltas: number): { tom: Tom; icone: LucideIcon; fundo: string } {
+  if (faltas >= 2) return { tom: "perigo", icone: CircleAlert, fundo: "bg-perigo-suave" };
+  if (faltas === 1) return { tom: "aviso", icone: TriangleAlert, fundo: "bg-aviso-suave" };
+  return { tom: "sucesso", icone: CircleCheck, fundo: "" };
 }

@@ -43,5 +43,5 @@ export async function enviarTarefa(_: EstadoAcao, formData: FormData): Promise<E
   }
 
   refresh();
-  return { ok: "Tarefa enviada! Agora é só aguardar a avaliação. 🚀" };
+  return { ok: "Tarefa enviada! Agora é só aguardar a avaliação." };
 }

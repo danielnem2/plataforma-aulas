@@ -1,24 +1,37 @@
+import { Coins, GraduationCap, LogOut } from "lucide-react";
 import { sair } from "@/app/login/actions";
 import { AvisoSessao } from "@/components/aviso-sessao";
-import { ROTULO_PAPEL } from "@/lib/rotulos";
+import { BotaoTema } from "@/components/botao-tema";
+import { botao, Icone } from "@/components/ui";
+import { ICONE_PAPEL, ROTULO_PAPEL } from "@/lib/rotulos";
 import type { PerfilAtual } from "@/lib/supabase/server";
 
 export function Cabecalho({ perfil }: { perfil: PerfilAtual }) {
   return (
-    <header className="flex items-center justify-between border-b border-slate-700 bg-slate-900/80 px-6 py-3">
-      <span className="font-bold text-cyan-300">Plataforma de Aulas</span>
-      <div className="flex items-center gap-4 text-sm">
+    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-borda bg-superficie px-6 py-3">
+      <span className="flex items-center gap-2 text-lg font-bold text-primaria-texto">
+        <Icone icone={GraduationCap} tamanho={24} />
+        Plataforma de Aulas
+      </span>
+      <div className="flex flex-wrap items-center gap-3 text-sm">
         <AvisoSessao loginEm={perfil.ultimo_login_em} />
+        <BotaoTema />
         {perfil.papel === "aluno" && (
-          <span className="rounded-full bg-amber-500/15 px-3 py-1 text-amber-300">
-            🪙 {perfil.gold_saldo}
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-aviso-suave px-3 py-1 font-semibold text-aviso">
+            <Icone icone={Coins} tamanho={16} />
+            {perfil.gold_saldo}
+            <span className="sr-only">Gold</span>
           </span>
         )}
-        <span className="text-slate-300">
-          {perfil.nome} · {ROTULO_PAPEL[perfil.papel]}
+        <span className="inline-flex items-center gap-2 text-texto-medio">
+          <Icone icone={ICONE_PAPEL[perfil.papel]} tamanho={16} className="text-texto-suave" />
+          <span>
+            {perfil.nome} <span className="text-texto-suave">· {ROTULO_PAPEL[perfil.papel]}</span>
+          </span>
         </span>
         <form action={sair}>
-          <button className="rounded-lg bg-red-500/15 px-3 py-1 text-red-300 hover:bg-red-500/25">
+          <button className={botao("secundario", "pequeno")}>
+            <Icone icone={LogOut} tamanho={16} />
             Sair
           </button>
         </form>
