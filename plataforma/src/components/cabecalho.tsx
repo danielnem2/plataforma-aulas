@@ -5,14 +5,23 @@ import { BotaoTema } from "@/components/botao-tema";
 import { botao, Icone } from "@/components/ui";
 import { ICONE_PAPEL, ROTULO_PAPEL } from "@/lib/rotulos";
 import type { PerfilAtual } from "@/lib/supabase/server";
+import type { MarcaEscola } from "@/components/tema-da-escola";
 
-export function Cabecalho({ perfil }: { perfil: PerfilAtual }) {
+export function Cabecalho({ perfil, marca }: { perfil: PerfilAtual; marca?: MarcaEscola | null }) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-3 border-b border-borda bg-superficie px-6 py-3">
-      <span className="flex items-center gap-2 text-lg font-bold text-primaria-texto">
-        <Icone icone={GraduationCap} tamanho={24} />
-        Plataforma de Aulas
-      </span>
+      {marca?.logo ? (
+        <span className="flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={marca.logo} alt={marca.nome} className="h-10 w-auto max-w-48 object-contain" />
+          <span className="sr-only">{marca.nome}</span>
+        </span>
+      ) : (
+        <span className="flex items-center gap-2 text-lg font-bold text-primaria-texto">
+          <Icone icone={GraduationCap} tamanho={24} />
+          {marca?.nome ?? "Plataforma de Aulas"}
+        </span>
+      )}
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <AvisoSessao loginEm={perfil.ultimo_login_em} />
         <BotaoTema />

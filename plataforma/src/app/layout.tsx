@@ -18,7 +18,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col bg-fundo font-sans text-texto">
         {/* aplica o tema escolhido antes de pintar a tela (sem "piscar" branco no modo escuro) */}
         <Script id="tema" strategy="beforeInteractive">
-          {`try{if(localStorage.getItem("tema")==="escuro")document.documentElement.dataset.tema="escuro"}catch(e){}`}
+          {`try{var t=localStorage.getItem("tema")||localStorage.getItem("tema-escola");if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}`}
         </Script>
         <a
           href="#conteudo"

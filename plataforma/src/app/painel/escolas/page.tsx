@@ -3,7 +3,9 @@ import { FormAcao } from "@/components/form-acao";
 import { Campo, Cartao, estiloInput, Expansivel, Selo, TituloPagina } from "@/components/ui";
 import { exigirPapel } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import type { TemaEscola } from "@/lib/tema-escola";
 import { criarEscola, editarEscola } from "./actions";
+import { TemaForm } from "./tema-form";
 
 export const metadata = { title: "Escolas" };
 // Depende do usuário logado: renderiza a cada requisição
@@ -14,7 +16,10 @@ export default async function EscolasPage() {
   const supabase = await createClient();
 
   const [{ data: escolas }, { data: turmas }, { data: pessoas }] = await Promise.all([
-    supabase.from("escolas").select("id, nome, endereco, telefone, ativa").order("nome"),
+    supabase
+      .from("escolas")
+      .select("id, nome, endereco, telefone, ativa, tema_cor, tema_fundo, tema_modo, tema_nome, logo_path")
+      .order("nome"),
     supabase.from("turmas").select("escola_id"),
     supabase.from("perfis").select("escola_id, papel, nome").neq("papel", "admin"),
   ]);
@@ -61,6 +66,10 @@ export default async function EscolasPage() {
                     {c.coordenadores.length ? c.coordenadores.join(", ") : "—"}
                   </span>
                 </div>
+                <div className="flex flex-wrap gap-4">
+                <Expansivel rotulo="Tema e logo">
+                  <TemaForm escolaId={e.id} tema={e as unknown as TemaEscola} />
+                </Expansivel>
                 <Expansivel rotulo="Editar">
                   <FormAcao acao={editarEscola}>
                     <input type="hidden" name="id" value={e.id} />
@@ -80,6 +89,7 @@ export default async function EscolasPage() {
                     </label>
                   </FormAcao>
                 </Expansivel>
+                </div>
               </li>
             );
           })}

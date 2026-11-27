@@ -6,7 +6,10 @@ import { botao, Icone } from "@/components/ui";
 
 /** Chave no navegador; o script do <head> (app/layout.tsx) aplica antes da página aparecer */
 export const CHAVE_TEMA = "tema";
-const EVENTO = "tema-mudou";
+/** Modo padrão da escola (vale enquanto a pessoa não escolher no botão) */
+export const CHAVE_TEMA_ESCOLA = "tema-escola";
+export const EVENTO_TEMA = "tema-mudou";
+const EVENTO = EVENTO_TEMA;
 
 function temaAtual() {
   return document.documentElement.dataset.tema === "escuro" ? "escuro" : "claro";
@@ -24,8 +27,8 @@ export function BotaoTema() {
 
   const alternar = () => {
     const novo = temaAtual() === "escuro" ? "claro" : "escuro";
-    if (novo === "escuro") document.documentElement.dataset.tema = "escuro";
-    else delete document.documentElement.dataset.tema;
+    // sempre explícito: o tema da escola pode ter o escuro como padrão
+    document.documentElement.dataset.tema = novo;
     try {
       localStorage.setItem(CHAVE_TEMA, novo);
     } catch {}

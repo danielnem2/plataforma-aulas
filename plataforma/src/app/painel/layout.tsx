@@ -1,5 +1,6 @@
 import { Cabecalho } from "@/components/cabecalho";
 import { MenuLateral, type Contadores } from "@/components/menu-lateral";
+import { carregarTemaEscola, EstiloEscola } from "@/components/tema-da-escola";
 import { exigirPapel } from "@/lib/auth";
 import { DIAS_AVISO_AMARELO, DIAS_AVISO_VERMELHO } from "@/lib/contrato";
 import { createClient } from "@/lib/supabase/server";
@@ -10,6 +11,7 @@ export const instant = false;
 export default async function PainelLayout({ children }: LayoutProps<"/painel">) {
   const perfil = await exigirPapel(["admin", "diretor", "professor"]);
   const supabase = await createClient();
+  const escola = await carregarTemaEscola(perfil.escola_id);
 
   // Contadores do menu (RLS já limita ao que cada um pode ver)
   const agora = new Date();
@@ -49,7 +51,8 @@ export default async function PainelLayout({ children }: LayoutProps<"/painel">)
 
   return (
     <>
-      <Cabecalho perfil={perfil} />
+      {escola && <EstiloEscola tema={escola.tema} />}
+      <Cabecalho perfil={perfil} marca={escola?.marca} />
       <div className="flex flex-1">
         <MenuLateral papel={perfil.papel} contadores={contadores} />
         <main id="conteudo" tabIndex={-1} className="flex-1 overflow-x-auto p-6 focus:outline-none">
